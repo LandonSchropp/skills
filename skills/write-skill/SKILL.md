@@ -15,13 +15,7 @@ You write test cases (pressure scenarios with subagents), watch them fail (basel
 
 **Official guidance:** For Anthropic's official skill authoring best practices, see anthropic-best-practices.md. This document provides additional patterns and guidelines that complement the TDD-focused approach in this skill.
 
-## What is a Skill?
-
-A **skill** is a reference guide for proven techniques, patterns, or tools. Skills help future agent instances find and apply effective approaches.
-
-**Skills are** reusable techniques, patterns, tools, and reference guides. **Skills are NOT** narratives about how you solved a problem once.
-
-## TDD Mapping for Skills
+## TDD Process for Skills
 
 | TDD Concept             | Skill Creation                                   |
 | ----------------------- | ------------------------------------------------ |
