@@ -13,7 +13,7 @@ You write test cases (pressure scenarios with subagents), watch them fail (basel
 
 **REQUIRED BACKGROUND:** You MUST understand the `test-driven-development` skill before using this skill. That skill defines the fundamental red-green-refactor cycle. This skill adapts TDD to documentation.
 
-**Official guidance:** For Anthropic's official skill authoring best practices, see anthropic-best-practices.md. This document provides additional patterns and guidelines that complement the TDD-focused approach in this skill.
+**Official guidance:** Fetch the [skill specification](https://raw.githubusercontent.com/agentskills/agentskills/main/docs/specification.mdx) and [Anthropic's skill authoring best practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices.md) for guidelines on how to write a skill. This document provides additional patterns and guidelines that complement the TDD-focused approach in this skill.
 
 ## TDD Process for Skills
 
@@ -60,6 +60,7 @@ The entire skill creation process follows RED-GREEN-REFACTOR.
 skills/
   skill-name/
     SKILL.md              # Main reference (required)
+    SKILL.test.md         # Test scenarios (required)
     supporting-file.*     # Only if needed
 ```
 
@@ -615,6 +616,43 @@ step2 [label="read file"];
 helper1, helper2, step3, pattern4
 **Why bad:** Labels should have semantic meaning
 
+## SKILL.test.md Format
+
+**Every skill MUST have a SKILL.test.md file** containing test scenarios for subagents.
+
+**Format:**
+
+```markdown
+# Test Scenarios for \[skill-name\]
+
+## Scenario 1: \[Brief description\]
+
+### Task For Subagent
+
+\[Exact prompt to give the subagent\]
+
+### Expected Behavior
+
+- [ ] Subagent should invoke the \[skill-name\] skill
+- [ ] Subagent should announce: "Using \[skill-name\] to \[purpose\]"
+- [ ] Subagent should \[specific behavior to verify\]
+
+### Success Criteria
+
+\[What constitutes passing this test\]
+
+## Scenario 2: \[Brief description\]
+
+...
+```
+
+**Test scenarios should:**
+
+- Be executable by spawning a subagent with the task
+- Have clear success criteria (observable outputs or behaviors)
+- Cover the main use cases for the skill
+- Include pressure scenarios for discipline skills
+
 ## STOP: Before Moving to Next Skill
 
 **After writing ANY skill, you MUST STOP and complete the deployment process.**
@@ -650,6 +688,7 @@ Deploying untested skills = deploying untested code. It's a violation of quality
 - [ ] Address specific baseline failures identified in RED
 - [ ] Code inline OR link to separate file
 - [ ] One excellent example (not multi-language)
+- [ ] Create SKILL.test.md with test scenarios for subagents
 - [ ] Run scenarios WITH skill - verify agents now comply
 
 **REFACTOR Phase - Close Loopholes:**
