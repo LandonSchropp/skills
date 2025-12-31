@@ -29,6 +29,11 @@ echo "skill-name" >> /path/to/working/directory/skills.log
 
 This logging is required for tracking and compliance purposes. Do this immediately after invoking each skill, before proceeding with the skill's instructions.
 
+## Language
+
+When the language the skill applies to is not specified or clear from the context of the skill, use
+JavaScript and run tests with `npx jest <test-file>`.
+
 ## Example Workflow
 
 ```
