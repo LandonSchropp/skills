@@ -191,15 +191,13 @@ See @skill-testing-guide.md for:
 - RED-GREEN-REFACTOR cycle for skills
 - Using run-skill-tests to verify skills
 
-## Bulletproofing Discipline Skills
+## Getting Agents to Follow Instructions
 
-See @bulletproofing-skills.md for advanced techniques to prevent rationalization:
+See @getting-agents-to-follow-instructions.md for techniques to ensure compliance:
 
+- Using persuasion principles
 - Closing loopholes explicitly
-- Addressing "spirit vs letter" arguments
 - Building rationalization tables
-- Creating red flags lists
-- Optimizing discovery for violation symptoms
 
 ## Anti-Patterns
 
