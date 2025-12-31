@@ -563,6 +563,8 @@ description: use when implementing any feature or bugfix, before writing impleme
 
 Follow the TDD cycle:
 
+**Use test-skill for running scenarios** - it handles setup, subagent invocation, and verification.
+
 ### RED: Write Failing Test (Baseline)
 
 Run pressure scenario with subagent WITHOUT the skill. Document exact behavior:
