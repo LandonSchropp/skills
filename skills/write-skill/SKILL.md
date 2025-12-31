@@ -1,6 +1,6 @@
 ---
 name: write-skill
-description: Use when authoring a new skill or editing an existing skill. Activate before writing SKILL.md or SKILL.test.md files.
+description: Use when creating or editing any skill-related file (SKILL.md, SKILL.test.md, skill documentation, skill scripts, or skill resources).
 ---
 
 ## Overview
