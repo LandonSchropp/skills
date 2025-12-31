@@ -104,7 +104,7 @@ example-js.js, example-py.py, example-go.go
 **Use the `generate-template` script to create skill files:**
 
 ```bash
-./skills/generate-template skills/<skill-name>
+generate-template skills/<skill-name>
 ```
 
 This generates both `SKILL.md` and `SKILL.test.md` with the proper structure and guidance comments.
@@ -143,7 +143,7 @@ Deploying untested skills = deploying untested code. It's a violation of quality
 
 **GREEN Phase - Write Minimal Skill:**
 
-- [ ] Run `./skills/generate-template skills/<skill-name>` to create skill files
+- [ ] Run `generate-template skills/<skill-name>` to create skill files
 - [ ] Name uses only letters, numbers, hyphens (no parentheses/special chars)
 - [ ] YAML frontmatter with only name and description (max 1024 chars)
 - [ ] Description starts with "Use when..." and includes specific triggers/symptoms

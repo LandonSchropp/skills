@@ -1,0 +1,139 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'fileutils'
+require 'json'
+require 'open3'
+
+# Runs a skill test scenario by:
+#
+# 1. Reading the SKILL.test.md file from the skill directory
+# 2. Extracting the specified scenario
+# 3. Creating a test directory
+# 4. Running Claude with the task
+# 5. Extracting skills invoked from JSON output
+# 6. Returning test data for subagent to validate
+
+if ARGV.length != 2
+  puts 'Usage: run-skill-test <skill-directory> <scenario-number>'
+  exit 1
+end
+
+skill_directory = ARGV[0]
+scenario_number = ARGV[1].to_i
+
+# Helper methods to extract headers and sections from markdown.
+#
+# @param markdown [String] The markdown content
+# @param header [String] The header text to find
+# @return [String, nil] The matching header line, including the prefix.
+def extract_header(markdown, header)
+  markdown.match(/^(\#{1,6}) #{Regexp.escape(header)}(.*)$/)&.to_s
+end
+
+def extract_section(markdown, header)
+  # Find the header
+  header_line = extract_header(markdown, header)
+  return nil unless header_line
+
+  # Count the header level
+  level = header_line.match(/^\#{1,6}/).to_s.length
+
+  # Capture the section content until the next header of the same or higher level
+  section_regex = /^\#{#{level}} #{Regexp.escape(header)}.*?\n(.*?)(?=^\#{1,#{level}} |\z)/m
+  markdown.match(section_regex)&.match(1)&.strip
+end
+
+# Read the SKILL.test.md file
+test_file_path = File.join(skill_directory, 'SKILL.test.md')
+
+unless File.exist?(test_file_path)
+  puts "Error: #{test_file_path} not found"
+  exit 1
+end
+
+test_content = File.read(test_file_path)
+
+# Extract the specific scenario section and header
+scenario_title = extract_header(test_content, "Scenario #{scenario_number}").gsub(/^#+\s+/, '')
+
+unless scenario_title
+  puts "Error: Scenario #{scenario_number} not found in #{test_file_path}"
+  exit 1
+end
+
+scenario_section = extract_section(test_content, "Scenario #{scenario_number}")
+
+# Extract subsections from the scenario
+task = extract_section(scenario_section, 'Task For Subagent')
+success_criteria = extract_section(scenario_section, 'Success Criteria')
+expected_behavior = extract_section(scenario_section, 'Expected Behavior')
+  &.gsub("- [ ] ", "")
+  &.split("\n")
+
+skill_name = File.basename(skill_directory)
+
+# Get script directory and project root
+script_dir = File.dirname(__FILE__)
+project_root = File.expand_path('../..', script_dir)
+
+# Create test directory in repo's tmp/
+test_directory = File.join(project_root, 'tmp', skill_name, "scenario-#{scenario_number}")
+FileUtils.rm_rf(test_directory) if File.exist?(test_directory)
+FileUtils.mkdir_p(test_directory)
+
+log_file = File.join(test_directory, 'claude-output.json')
+
+# Run Claude with the task
+Dir.chdir(test_directory) do
+  command = [
+    'claude',
+    '--print',
+    '--verbose',
+    '--output-format', 'stream-json',
+    '--dangerously-skip-permissions',
+    '--plugin-dir', project_root
+  ]
+
+  stdout, stderr, status = Open3.capture3(*command, stdin_data: task)
+
+  File.write(log_file, stdout)
+  File.write(File.join(test_directory, 'stderr.log'), stderr) if stderr && !stderr.empty?
+end
+
+# Parse the JSON output to extract skills and messages in order
+result = File.read(log_file)
+  .split("\n")
+  .map { JSON.parse(_1) }
+  .flat_map do |data|
+    # Extract assistant messages and tool uses
+    if data['type'] == 'assistant' && data['message']
+      content = data.dig('message', 'content')
+      next unless content.is_a?(Array)
+
+      content.map do |item|
+
+        # Assistant messages
+        if item['type'] == 'text'
+          { type: 'assistant', message: item['text'] }
+        end
+
+        # Skill tool uses
+        if item['type'] == 'tool_use' && item['name'] == 'Skill'
+          { type: 'skill', name: item.dig('input', 'skill') }
+        end
+      end
+    end
+  end
+  .compact
+
+puts JSON.pretty_generate({
+  skill_name:,
+  scenario_number:,
+  scenario_title:,
+  task:,
+  expected_behavior:,
+  success_criteria:,
+  log_file:,
+  result:
+})
