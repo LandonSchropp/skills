@@ -41,7 +41,7 @@ For other environments, check your platform's documentation for how skills are l
 
 4. **Follow skill exactly** → Execute the instructions as written
 
-## Red Flags
+## Rationalizations
 
 These thoughts mean STOP—you're rationalizing:
 

@@ -36,7 +36,7 @@ During baseline testing, document every excuse agents make for violating the rul
 Add each to a rationalization table in your skill:
 
 ```markdown
-| Excuse                           | Reality                                                                 |
+| Thought/Excuse                   | Reality                                                                 |
 | -------------------------------- | ----------------------------------------------------------------------- |
 | "Too simple to test"             | Simple code breaks. Test takes 30 seconds.                              |
 | "I'll test after"                | Tests passing immediately prove nothing.                                |
