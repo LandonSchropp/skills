@@ -18,7 +18,6 @@ You write test cases (pressure scenarios with subagents), watch them fail (basel
 You MUST read/fetch these documents and follow their instructions (no exceptions):
 
 - @skill-discovery-optimization.md
-- @code-example-guidelines.md
 - @skill-format-guide.md
 - @skill-testing-guide.md
 - @getting-agents-to-follow-instructions.md

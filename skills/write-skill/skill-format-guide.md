@@ -135,6 +135,24 @@ Include words Claude would search for throughout the skill body (not just the de
 - **Synonyms:** "timeout/hang/freeze", "cleanup/teardown/dispose"
 - **Tools:** Actual commands (`rspec`, `git`), library names (React, Express), file types (`.env`, `package.json`)
 
+## Code Examples
+
+**One excellent example beats many mediocre ones.** One great example is enough. Choose the most relevant language for the example—TypeScript/JavaScript are a good fallback if the language is not obvious.
+
+**Good examples are:**
+
+- Complete and runnable
+- Well-commented explaining WHY
+- From a real scenario
+- Shows the pattern clearly
+- Ready to adapt (not generic)
+
+**Avoid:**
+
+- Implementing in multiple languages
+- Creating fill-in-the-blank templates
+- Writing contrived examples
+
 ## Token Efficiency
 
 Frequently-loaded skills appear in EVERY conversation. Every token counts, so keep them concise.
