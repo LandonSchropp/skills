@@ -1,4 +1,9 @@
-# Landon Schropp's Skills
+# Landon Schropp's Agent Toolkit
+
+This repository contains my personal configuration for AI agents. It includes reusable configuration
+and documentation that work across multiple AI tools, such as Claude Code and Codex CLI.
+
+## Skills
 
 Agent Skills are folders containing a `SKILL.md` file (plus optional scripts, references, and
 assets) that AI agents can discover and use. They package domain expertise, extend functionality,
