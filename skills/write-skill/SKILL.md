@@ -18,14 +18,13 @@ You write test cases (pressure scenarios with subagents), watch them fail (basel
 You MUST read/fetch these documents and follow their instructions (no exceptions):
 
 - @skill-discovery-optimization.md
-- @code-and-flowchart-guidelines.md
+- @code-example-guidelines.md
 - @file-organization-patterns.md
 - @skill-testing-guide.md
 - @getting-agents-to-follow-instructions.md
 - [Skill Specification](https://raw.githubusercontent.com/agentskills/agentskills/main/docs/specification.mdx)
 - [Skill Authoring Best Practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices.md)
 - [Persuasion Principles](https://raw.githubusercontent.com/obra/superpowers/main/skills/writing-skills/persuasion-principles.md)
-- [Graphviz Conventions](https://raw.githubusercontent.com/obra/superpowers/main/skills/writing-skills/graphviz-conventions.dot)
 - [Testing Skills with Subagents](https://raw.githubusercontent.com/obra/superpowers/main/skills/writing-skills/testing-skills-with-subagents.md)
 
 ## TDD Process for Skills
@@ -117,8 +116,6 @@ What is this? Core principle in 1-2 sentences.
 
 ## When to Use
 
-[Small inline flowchart IF decision non-obvious]
-
 Bullet list with SYMPTOMS and use cases
 When NOT to use
 
@@ -177,20 +174,6 @@ Edit skill without testing? Same violation.
 
 example-js.js, example-py.py, example-go.go
 **Why bad:** Mediocre quality, maintenance burden
-
-### ❌ Code in Flowcharts
-
-```dot
-step1 [label="import fs"];
-step2 [label="read file"];
-```
-
-**Why bad:** Can't copy-paste, hard to read
-
-### ❌ Generic Labels
-
-helper1, helper2, step3, pattern4
-**Why bad:** Labels should have semantic meaning
 
 ## SKILL.test.md Format
 
@@ -278,7 +261,6 @@ Deploying untested skills = deploying untested code. It's a violation of quality
 
 **Quality Checks:**
 
-- [ ] Small flowchart only if decision non-obvious
 - [ ] Quick reference table
 - [ ] Common mistakes section
 - [ ] No narrative storytelling
