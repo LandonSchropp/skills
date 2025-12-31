@@ -1,6 +1,6 @@
 ---
 name: write-skill
-description: Use when creating a new skill, editing an existing skill, or improving skill documentation. Activate before writing any SKILL.md file or modifying skill structure.
+description: Use when authoring a new skill or editing an existing skill. Activate before writing SKILL.md or SKILL.test.md files.
 ---
 
 ## Overview
@@ -563,7 +563,7 @@ description: use when implementing any feature or bugfix, before writing impleme
 
 Follow the TDD cycle:
 
-**Use test-skill for running scenarios** - it handles setup, subagent invocation, and verification.
+**Use run-skill-tests for running scenarios** - it handles setup, subagent invocation, and verification.
 
 ### RED: Write Failing Test (Baseline)
 
@@ -650,6 +650,7 @@ helper1, helper2, step3, pattern4
 
 **Test scenarios should:**
 
+- **Be as simple as possible** - If tests are too complex, agents may get confused or act outside of the test parameters. Test one thing: does the agent invoke the right skill?
 - Be executable by spawning a subagent with the task
 - Have clear success criteria (observable outputs or behaviors)
 - Cover the main use cases for the skill

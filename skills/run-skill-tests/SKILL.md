@@ -1,6 +1,6 @@
 ---
-name: test-skill
-description: Use when creating a new skill, editing an existing skill, or improving skill documentation to verify it works correctly and agents follow its instructions
+name: run-skill-tests
+description: Use when asked to test, run, or execute skill test scenarios (from SKILL.test.md) or verify a skill works correctly
 ---
 
 # Testing Skills
