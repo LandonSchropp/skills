@@ -1,0 +1,119 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'fileutils'
+
+# Parse arguments
+if ARGV.empty?
+  puts "Generates the required skill files in the specified directory."
+  puts
+  puts "Usage: generate-template '<skills-directory>/<skill-name>'"
+
+  exit 1
+end
+
+directory = ARGV[0]
+skill_name = File.basename(directory)
+
+# Create the skill directory if it doesn't already exist
+FileUtils.mkdir_p(directory)
+
+# Ensure the SKILL.md and SKILL.test.md files do not already exist.
+skill_md_path = File.join(directory, 'SKILL.md')
+skill_test_md_path = File.join(directory, 'SKILL.test.md')
+
+if File.exist?(skill_md_path)
+  puts "Error: #{skill_md_path} already exists."
+  exit 1
+end
+
+if File.exist?(skill_test_md_path)
+  puts "Error: #{skill_test_md_path} already exists."
+  exit 1
+end
+
+# Generate SKILL.md
+
+skill_md_content = <<~MARKDOWN
+  ---
+  name: #{skill_name}
+  description: Use when [triggering conditions and symptoms]
+  ---
+
+  # #{skill_name.split('-').map(&:capitalize).join(' ')}
+
+  ## Overview
+
+  <!-- Write core principle in 1-2 sentences -->
+
+  ## [Additional Sections] (Optional)
+
+  <!--
+  Add main content sections as needed. Common patterns:
+
+  - Step-by-Step Process (for procedural skills)
+  - Rules / Guidelines (for discipline skills)
+  - References (for reference skills)
+  -->
+
+  ## Common Mistakes (Optional)
+
+  <!-- For discipline skills only—thoughts/excuses that indicate rationalization -->
+
+  ## Rationalizations (Optional)
+
+  | Thought/Excuse | Reality |
+  | -------------- | ------- |
+  | ...            | ...     |
+
+  ## Examples (Optional)
+
+  <!-- Include common pitfalls and how to avoid them -->
+MARKDOWN
+
+File.write(skill_md_path, skill_md_content)
+
+# Generate SKILL.test.md
+skill_test_md_content = <<~MARKDOWN
+  # Test Scenarios for #{skill_name}
+
+  <!-- Create test scenarios that verify agents invoke and follow this skill correctly -->
+
+  ## Scenario 1
+
+  <!-- Brief description of what this scenario tests -->
+
+  ### Task For Subagent
+
+  <!--
+  Write the exact prompt to give the subagent. This should be a realistic task that would trigger
+  the skill. Keep it simple and focused.
+  -->
+
+  ### Expected Behavior
+
+  <!-- Add specific behaviors to verify based on the skill's instructions -->
+
+  - [ ] Subagent should invoke the #{skill_name} skill
+
+  ### Success Criteria
+
+  <!-- What constitutes passing this test? Be specific and measurable. -->
+
+  ## Scenario 2
+
+  <!--
+  Add more scenarios as needed. Consider:
+
+  - Positive cases (skill should be invoked)
+  - Edge cases (skill handles unusual situations)
+  - Pressure scenarios (for discipline skills—does agent follow rules under pressure?)
+  - Negative cases (when skill should NOT be invoked)
+  -->
+MARKDOWN
+
+File.write(skill_test_md_path, skill_test_md_content)
+
+# Output the paths
+puts skill_md_path
+puts skill_test_md_path

@@ -11,47 +11,6 @@ files:
 In addition, skills can contain extra supporting files, such as additional markdown files such as AI
 docs or comprehensive syntax, or reusable scripts, utilities, and templates.
 
-## Template
-
-Use the following template for skills.
-
-```markdown
----
-name: skill-name
-description: Use when [triggering conditions and symptoms]
----
-
-# Skill Name
-
-## Overview
-
-<!-- Write core principle in 1-2 sentences -->
-
-## \[Additional Sections\] (Optional)
-
-<!--
-Add main content sections as needed. Common patterns:
-
-- Step-by-Step Process (for procedural skills)
-- Rules / Guidelines (for discipline skills)
-- References (for reference skills)
--->
-
-## Common Mistakes (Optional)
-
-<!-- For discipline skills only—thoughts/excuses that indicate rationalization -->
-
-## Rationalizations (Optional)
-
-| Thought/Excuse | Reality |
-| -------------- | ------- |
-| ...            | ...     |
-
-## Examples (Optional)
-
-<!-- Include common pitfalls and how to avoid them -->
-```
-
 ## Name
 
 Use active voice, verb-first. Name by what you DO or core insight. Gerunds (-ing) work well for processes.

@@ -99,35 +99,15 @@ Edit skill without testing? Same violation.
 example-js.js, example-py.py, example-go.go
 **Why bad:** Mediocre quality, maintenance burden
 
-## SKILL.test.md Format
+## Creating Skill Files
 
-**Every skill MUST have a SKILL.test.md file** containing test scenarios for subagents.
+**Use the `generate-template` script to create skill files:**
 
-**Format:**
-
-```markdown
-# Test Scenarios for \[skill-name\]
-
-## Scenario 1: \[Brief description\]
-
-### Task For Subagent
-
-\[Exact prompt to give the subagent\]
-
-### Expected Behavior
-
-- [ ] Subagent should invoke the \[skill-name\] skill
-- [ ] Subagent should announce: "Using \[skill-name\] to \[purpose\]"
-- [ ] Subagent should \[specific behavior to verify\]
-
-### Success Criteria
-
-\[What constitutes passing this test\]
-
-## Scenario 2: \[Brief description\]
-
-...
+```bash
+./skills/generate-template skills/<skill-name>
 ```
+
+This generates both `SKILL.md` and `SKILL.test.md` with the proper structure and guidance comments.
 
 **Test scenarios should:**
 
@@ -163,6 +143,7 @@ Deploying untested skills = deploying untested code. It's a violation of quality
 
 **GREEN Phase - Write Minimal Skill:**
 
+- [ ] Run `./skills/generate-template skills/<skill-name>` to create skill files
 - [ ] Name uses only letters, numbers, hyphens (no parentheses/special chars)
 - [ ] YAML frontmatter with only name and description (max 1024 chars)
 - [ ] Description starts with "Use when..." and includes specific triggers/symptoms
@@ -172,7 +153,7 @@ Deploying untested skills = deploying untested code. It's a violation of quality
 - [ ] Address specific baseline failures identified in RED
 - [ ] Code inline OR link to separate file
 - [ ] One excellent example (not multi-language)
-- [ ] Create SKILL.test.md with test scenarios for subagents
+- [ ] Fill in SKILL.test.md with test scenarios for subagents
 - [ ] Run scenarios WITH skill - verify agents now comply
 
 **REFACTOR Phase - Close Loopholes:**
