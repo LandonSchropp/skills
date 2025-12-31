@@ -4,7 +4,7 @@ Even well-intentioned agents will find loopholes and rationalize exceptions when
 
 ## Use Persuasion
 
-LLMs respond to persuasion techniques the same way humans do—authority language, commitment devices, and social proof increase compliance and prevent rationalization. Understanding the research behind these techniques helps you apply them systematically. Fetch [persuasion-principles.md](https://raw.githubusercontent.com/obra/superpowers/main/skills/writing-skills/persuasion-principles.md) for the foundation (Cialdini, 2021; Meincke et al., 2025) on authority, commitment, scarcity, social proof, and unity principles.
+LLMs respond to persuasion techniques the same way humans do—authority language, commitment devices, and social proof increase compliance and prevent rationalization. Understanding the research behind these techniques helps you apply them systematically. Fetch [Persuasion Principles](https://raw.githubusercontent.com/obra/superpowers/main/skills/writing-skills/persuasion-principles.md) for the foundation on authority, commitment, scarcity, social proof, and unity principles.
 
 ## Close Every Loophole Explicitly
 

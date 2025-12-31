@@ -13,7 +13,20 @@ You write test cases (pressure scenarios with subagents), watch them fail (basel
 
 **REQUIRED BACKGROUND:** You MUST understand the `test-driven-development` skill before using this skill. That skill defines the fundamental red-green-refactor cycle. This skill adapts TDD to documentation.
 
-**Official guidance:** Fetch the [skill specification](https://raw.githubusercontent.com/agentskills/agentskills/main/docs/specification.mdx) and [Anthropic's skill authoring best practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices.md) for guidelines on how to write a skill. This document provides additional patterns and guidelines that complement the TDD-focused approach in this skill.
+## Required Reading
+
+You MUST read/fetch these documents and follow their instructions (no exceptions):
+
+- @skill-discovery-optimization.md
+- @code-and-flowchart-guidelines.md
+- @file-organization-patterns.md
+- @skill-testing-guide.md
+- @getting-agents-to-follow-instructions.md
+- [Skill Specification](https://raw.githubusercontent.com/agentskills/agentskills/main/docs/specification.mdx)
+- [Skill Authoring Best Practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices.md)
+- [Persuasion Principles](https://raw.githubusercontent.com/obra/superpowers/main/skills/writing-skills/persuasion-principles.md)
+- [Graphviz Conventions](https://raw.githubusercontent.com/obra/superpowers/main/skills/writing-skills/graphviz-conventions.dot)
+- [Testing Skills with Subagents](https://raw.githubusercontent.com/obra/superpowers/main/skills/writing-skills/testing-skills-with-subagents.md)
 
 ## TDD Process for Skills
 
@@ -131,35 +144,6 @@ What goes wrong + fixes
 Concrete results
 ```
 
-## Skill Discovery Optimization
-
-**Critical for discovery:** Future Claude needs to FIND your skill
-
-See @skill-discovery-optimization.md for complete guidelines on:
-
-- Writing effective descriptions (triggers vs workflow)
-- Keyword coverage for search
-- Descriptive naming conventions
-- Token efficiency techniques
-- Cross-referencing other skills
-
-## Code and Flowchart Guidelines
-
-See @code-and-flowchart-guidelines.md for:
-
-- When to use flowcharts vs markdown
-- Graphviz conventions and rendering
-- Writing effective code examples
-- Choosing the right language for examples
-
-## File Organization
-
-See @file-organization-patterns.md for three common organizational patterns:
-
-- Self-contained skills (everything inline)
-- Skills with reusable tools
-- Skills with heavy reference material
-
 ## The Iron Law (Same as TDD)
 
 ```
@@ -181,23 +165,6 @@ Edit skill without testing? Same violation.
 - Delete means delete
 
 **REQUIRED BACKGROUND:** The superpowers:test-driven-development skill explains why this matters. Same principles apply to documentation.
-
-## Testing Skills
-
-See @skill-testing-guide.md for:
-
-- Testing different skill types (discipline, technique, pattern, reference)
-- Common rationalizations for skipping testing
-- RED-GREEN-REFACTOR cycle for skills
-- Using run-skill-tests to verify skills
-
-## Getting Agents to Follow Instructions
-
-See @getting-agents-to-follow-instructions.md for techniques to ensure compliance:
-
-- Using persuasion principles
-- Closing loopholes explicitly
-- Building rationalization tables
 
 ## Anti-Patterns
 
