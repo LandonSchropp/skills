@@ -19,7 +19,7 @@ You MUST read/fetch these documents and follow their instructions (no exceptions
 
 - @skill-discovery-optimization.md
 - @skill-format-guide.md
-- @skill-testing-guide.md
+- @testing-guide.md
 - @getting-agents-to-follow-instructions.md
 - [Skill Specification](https://raw.githubusercontent.com/agentskills/agentskills/main/docs/specification.mdx)
 - [Skill Authoring Best Practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices.md)

@@ -6,7 +6,7 @@ Skills are organized into a single directory under `skills/<skill-name>`. They h
 files:
 
 - `SKILL.md`: The main skill reference file, as described by the [Skill Specification](https://raw.githubusercontent.com/agentskills/agentskills/main/docs/specification.mdx).
-- `SKILL.test.md`: The test file, which is detailed in @skill-testing-guide.md.
+- `SKILL.test.md`: The test file, which is detailed in @testing-guide.md.
 
 In addition, skills can contain extra supporting files, such as additional markdown files such as AI
 docs or comprehensive syntax, or reusable scripts, utilities, and templates.
