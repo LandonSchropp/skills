@@ -1,5 +1,5 @@
 ---
-name: write-skill
+name: writing-skills
 description: Use when creating or editing any skill-related file (SKILL.md, SKILL.test.md, skill documentation, skill scripts, or skill resources).
 ---
 
@@ -51,7 +51,7 @@ You MUST read/fetch ALL of these documents and follow their instructions before 
 
 ## Skill Types
 
-- **Discipline:** Rules and requirements agents must follow (e.g., `test-driven-development`, `verification-before-completion`)
+- **Discipline:** Rules and requirements agents must follow (e.g., `test-driven-development`, `verifying-before-completion`)
 - **Technique:** Concrete methodology with steps to follow (e.g., `condition-based-waiting`, `root-cause-tracing`)
 - **Pattern:** Way of thinking about problems (e.g., `flatten-with-flags`, `test-invariants`)
 - **Reference:** API docs, syntax guides, tool documentation

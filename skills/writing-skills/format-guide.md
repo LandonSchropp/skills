@@ -171,7 +171,7 @@ When referencing other skills, wrap the skill name in backticks and use explicit
 
 <!-- GOOD: Clear requirement language -->
 
-**REQUIRED:** You MUST use the `skill-instructions` skill
+**REQUIRED:** You MUST use the `using-skills` skill
 
 <!-- BAD: Unclear if required -->
 
@@ -179,7 +179,7 @@ See skills/testing/test-driven-development
 
 <!-- BAD: Force-loads a file -->
 
-@skills/write-skill/skill-structure.md
+@skills/writing-skills/skill-structure.md
 ```
 
 **Why no `@` links?** `@` syntax force-loads files immediately, consuming 200k+ context before you need them.

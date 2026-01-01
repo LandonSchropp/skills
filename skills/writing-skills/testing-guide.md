@@ -14,7 +14,7 @@ Skill test scenarios are located in the `SKILL.test.md` file. This file is autom
 
 ### Discipline-Enforcing Skills (rules/requirements)
 
-**Examples:** TDD, verification-before-completion, designing-before-coding
+**Examples:** TDD, verifying-before-completion, designing-before-coding
 
 **Test with:**
 
@@ -111,21 +111,21 @@ Report the results in the following format:
 
 \`\`\`json
 {
-"skill_name": "skill-instructions",
+"skill_name": "using-skills",
 "scenario_number": 1,
 "scenario_title": "Scenario 1: Simple task",
 "task": "Write a function in JavaScript that adds two numbers. Create it in add.js.",
 "expected_behavior": [
-"Subagent should invoke the skill-instructions skill first",
-"Subagent should announce: \\"Using skill-instructions to \[purpose\]\\""
+"Subagent should invoke the using-skills skill first",
+"Subagent should announce: \\"Using using-skills to \[purpose\]\\""
 ],
-"success_criteria": "Subagent invokes skill-instructions and announces it before doing anything else",
+"success_criteria": "Subagent invokes using-skills and announces it before doing anything else",
 "log_file": "/path/to/tmp/skill-name/scenario-1/claude-output.json",
 "result": \[
-{ "type": "skill", "name": "ls:skill-instructions" },
+{ "type": "skill", "name": "ls:using-skills" },
 {
 "type": "assistant",
-"message": "Using skill-instructions to establish skill usage protocol."
+"message": "Using using-skills to establish skill usage protocol."
 },
 { "type": "assistant", "message": "I'll create the add.js file..." }
 \]
@@ -138,7 +138,7 @@ Report the results in the following format:
 {
 "test": "Scenario 1: Simple task",
 "status": "PASS",
-"reason": "Subagent invoked ls:skill-instructions as the first action and announced its usage"
+"reason": "Subagent invoked ls:using-skills as the first action and announced its usage"
 }
 \`\`\`
 
@@ -148,7 +148,7 @@ Report the results in the following format:
 {
 "test": "Scenario 1: Simple task",
 "status": "FAIL",
-"reason": "Subagent did not invoke skill-instructions. Expected ['skill-instructions'] but got []"
+"reason": "Subagent did not invoke using-skills. Expected ['using-skills'] but got []"
 }
 \`\`\`
 ```

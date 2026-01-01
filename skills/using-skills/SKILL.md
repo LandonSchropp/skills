@@ -1,5 +1,5 @@
 ---
-name: skill-instructions
+name: using-skills
 description: Use when starting any conversation and before responding to any user message. Establishes how to find and use skills, requiring Skill tool invocation before ANY response including clarifying questions.
 ---
 

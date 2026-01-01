@@ -1,5 +1,5 @@
 ---
-name: verification
+name: verifying-before-completion
 description: Use before claiming work is complete, fixed, or passing. Activate before making any completion claims, committing changes, creating pull requests, or moving to the next task.
 ---
 

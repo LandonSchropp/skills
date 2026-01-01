@@ -2,7 +2,7 @@
 
 ## Skill Usage Protocol
 
-**CRITICAL: Upon starting ANY conversation or receiving ANY task, you MUST immediately invoke the `skill-instructions` skill as your first action before any other response.**
+**CRITICAL: Upon starting ANY conversation or receiving ANY task, you MUST immediately invoke the `using-skills` skill as your first action before any other response.**
 
 This is non-negotiable and applies to:
 
