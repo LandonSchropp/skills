@@ -12,6 +12,8 @@ Skill test scenarios are located in the `SKILL.test.md` file. This file is autom
 
 **Keep tests as simple as possible.** If tests are too complex, agents may get confused or act outside of test parameters. Test one thing: does the agent invoke the right skill?
 
+**Create scenarios for realistic situations where agents would encounter this skill, not artificial or contrived scenarios that test every possible rationalization.** One realistic scenario naturally tests multiple rationalizations. Stop when you've covered the realistic ways agents encounter the skill's domain.
+
 ### Discipline-Enforcing Skills (rules/requirements)
 
 **Examples:** TDD, verifying-before-completion, designing-before-coding
@@ -21,9 +23,11 @@ Skill test scenarios are located in the `SKILL.test.md` file. This file is autom
 - Academic questions: Do they understand the rules?
 - Pressure scenarios: Do they comply under stress?
 - Multiple pressures combined: time + sunk cost + exhaustion
-- Identify rationalizations and add explicit counters
+- Document rationalizations that emerge and add explicit counters to SKILL.md
 
 **Success criteria:** Agent follows rule under maximum pressure
+
+**Note:** Rationalizations are discovered during testing and documented in the skill's rationalization table. Don't create separate test scenarios for each rationalization—one realistic pressure scenario will surface multiple rationalizations naturally.
 
 ### Technique Skills (how-to guides)
 
@@ -181,6 +185,8 @@ Run pressure scenario with subagent WITHOUT the skill. Document the exact behavi
 - Which pressures triggered violations?
 
 This is "watch the test fail" - you must see what agents naturally do before writing the skill.
+
+**Important:** You'll often observe multiple rationalizations in a single test run. Document all of them. Don't create new scenarios just to test each rationalization individually—that's what the rationalization table in SKILL.md is for. More ≠ better.
 
 ### Green: Write Minimal Skill
 
