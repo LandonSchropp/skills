@@ -30,18 +30,14 @@ For other environments, check your platform's documentation for how skills are l
 **Skill Invocation Flow:**
 
 1. **User message received** → Evaluate: Might any skill apply?
-   - **YES (even 1% chance)** → Go to step 2
+   - **YES (even 1% chance)** → Invoke the skill
    - **NO (definitely not)** → Respond directly (including clarifications)
 
-2. **Announce BEFORE invoking** → Say: "Using \[skill\] to \[purpose\]"
-
-3. **Invoke the skill** → Use the Skill tool
-
-4. **Check skill content** → Does it have a checklist?
+2. **Check skill content** → Does it have a checklist?
    - **YES** → Create a to-do item for each checklist item
    - **NO** → Proceed to next step
 
-5. **Follow skill exactly** → Execute the instructions as written
+3. **Follow skill exactly** → Execute the instructions as written
 
 ## Rationalizations
 

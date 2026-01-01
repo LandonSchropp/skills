@@ -12,9 +12,3 @@ This is non-negotiable and applies to:
 - Any other user message
 
 Invoke the skill BEFORE asking clarifying questions, BEFORE exploring code, BEFORE doing anything else.
-
-## Skill Announcement Requirement
-
-**Before invoking any skill, you MUST announce it by saying: "Using [skill-name] to [purpose]"**
-
-This makes it clear which skill you're following and helps with debugging and transparency.
