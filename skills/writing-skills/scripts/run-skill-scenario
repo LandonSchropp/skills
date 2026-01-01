@@ -8,7 +8,8 @@ require 'optparse'
 
 options = {
   no_plugin: false,
-  task: nil
+  task: nil,
+  number: nil
 }
 
 parser = OptionParser.new do |opts|
@@ -27,6 +28,10 @@ parser = OptionParser.new do |opts|
   opts.separator ""
   opts.separator "Options:"
   opts.separator ""
+
+  opts.on("--number <n>", Integer, "Run number (for parallel execution)") do
+    options[:number] = _1
+  end
 
   opts.on("--no-plugin", "Disables the plugin directory (no skills available)") do
     options[:no_plugin] = true
@@ -54,11 +59,13 @@ if options[:task].nil?
 end
 
 task = options[:task]
+number = options[:number]
 
 script_dir = File.dirname(__FILE__)
 project_root = File.expand_path('../..', script_dir)
 
-test_directory = File.join(project_root, 'tmp', 'skill-test-run')
+dir_name = number ? "skill-test-run-#{number}" : 'skill-test-run'
+test_directory = File.join(project_root, 'tmp', dir_name)
 FileUtils.rm_rf(test_directory) if File.exist?(test_directory)
 FileUtils.mkdir_p(test_directory)
 

@@ -1,0 +1,114 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'json'
+require 'open3'
+require 'optparse'
+
+options = {
+  task: nil,
+  count: 5,
+  expected_skills: [],
+  no_plugin: false
+}
+
+parser = OptionParser.new do |opts|
+  opts.summary_indent = ""
+  opts.banner = "Usage: evaluate-skill-scenario --task <task> [OPTIONS]"
+  opts.separator ""
+  opts.separator "Runs a task multiple times and evaluates if expected skills were invoked."
+  opts.separator ""
+  opts.separator "Required Arguments:"
+  opts.separator ""
+
+  opts.on("--task <task>", "The task to execute") do
+    options[:task] = _1
+  end
+
+  opts.separator ""
+  opts.separator "Options:"
+  opts.separator ""
+
+  opts.on("--count <number>", Integer, "Number of times to run the scenario (default: 5)") do
+    options[:count] = _1
+  end
+
+  opts.on("--expected-skill <skill>", "Skill that should be invoked (can be specified multiple times)") do
+    options[:expected_skills] << _1
+  end
+
+  opts.on("--no-plugin", "Disables the plugin directory (no skills available)") do
+    options[:no_plugin] = true
+  end
+
+  opts.on("--help", "Displays the usage information.") do
+    puts opts
+    exit 0
+  end
+
+  opts.separator ""
+  opts.separator "Examples:"
+  opts.separator ""
+  opts.separator '    evaluate-skill-scenario --task "Write a function" --expected-skill using-skills'
+  opts.separator '    evaluate-skill-scenario --task "Fix a bug" --count 10 --expected-skill using-skills'
+end
+
+parser.parse!
+
+if options[:task].nil?
+  puts "Error: --task is required"
+  puts ""
+  puts parser
+  exit 1
+end
+
+task = options[:task]
+count = options[:count]
+expected_skills = options[:expected_skills]
+
+script_dir = File.dirname(__FILE__)
+run_scenario_script = File.join(script_dir, 'run-skill-scenario')
+
+ractors = count.times.map do |i|
+  Ractor.new(i, run_scenario_script, task, options[:no_plugin], expected_skills) do |index, script, task_text, no_plugin, expected|
+    run_number = index + 1
+
+    command = [script, '--task', task_text, '--number', run_number.to_s]
+    command << '--no-plugin' if no_plugin
+
+    stdout, stderr, status = Open3.capture3(*command)
+    result_data = JSON.parse(stdout)
+
+    skills_invoked = result_data['skills']
+    expected_skills_found = expected.select { skills_invoked.include?(_1) }
+    status = (expected.empty? || expected_skills_found.sort == expected.sort) ? 'PASS' : 'FAIL'
+
+    {
+      run: run_number,
+      skills: skills_invoked,
+      expected_skills_found: expected_skills_found,
+      status: status
+    }
+  end
+end
+
+results = ractors.map(&:take)
+
+skills_passed = results.count { _1[:status] == 'PASS' }
+skills_failed = results.count { _1[:status] == 'FAIL' }
+skills_pass_rate = count.positive? ? skills_passed.to_f / count : 0.0
+
+output = {
+  task: task,
+  runs: count,
+  expected_skills: expected_skills,
+  results: results,
+  summary: {
+    total_runs: count,
+    skills_passed: skills_passed,
+    skills_failed: skills_failed,
+    skills_pass_rate: skills_pass_rate
+  }
+}
+
+puts JSON.pretty_generate(output)
