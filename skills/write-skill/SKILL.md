@@ -18,7 +18,7 @@ You write test cases (pressure scenarios with subagents), watch them fail (basel
 You MUST read/fetch these documents and follow their instructions (no exceptions):
 
 - @skill-discovery-optimization.md
-- @skill-format-guide.md
+- @format-guide.md
 - @testing-guide.md
 - @getting-agents-to-follow-instructions.md
 - [Skill Specification](https://raw.githubusercontent.com/agentskills/agentskills/main/docs/specification.mdx)
