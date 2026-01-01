@@ -1,6 +1,6 @@
 ---
 name: writing-skills
-description: Use when creating or editing any skill-related file (SKILL.md, SKILL.test.md, skill documentation, skill scripts, or skill resources).
+description: Use when creating, editing or testing ANY skill or skill-related file (SKILL.md, SKILL.test.md, skill resources, skill scripts, or skill assets).
 ---
 
 This skill teaches you how to create effective skills that agents actually follow.
