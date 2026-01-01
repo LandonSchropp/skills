@@ -8,7 +8,6 @@ require 'optparse'
 
 # Parse the provided options
 options = {
-  dry_run: false,
   no_skills: false,
   directory: nil,
   scenario: nil
@@ -35,10 +34,6 @@ parser = OptionParser.new do |opts|
   opts.separator "Options:"
   opts.separator ""
 
-  opts.on("--dry-run", "Instructs the agent to not write any files") do
-    options[:dry_run] = true
-  end
-
   opts.on("--no-skills", "Configures the agent to not use any skills (helpful for baseline)") do
     options[:no_skills] = true
   end
@@ -52,7 +47,6 @@ parser = OptionParser.new do |opts|
   opts.separator "Examples:"
   opts.separator ""
   opts.separator "    run-skill-test --directory ./skills/my-skill --scenario 1"
-  opts.separator "    run-skill-test --directory ./skills/my-skill --scenario 2 --dry-run"
   opts.separator "    run-skill-test --directory ./skills/my-skill --scenario 3 --no-skills"
 end
 
@@ -111,13 +105,8 @@ end
 
 scenario_section = extract_section(test_content, "Scenario #{scenario_number}")
 
-# Extract subsections from the scenario
+# Extract subsections from the scenario.
 task = extract_section(scenario_section, 'Task For Subagent')
-
-# If dry-run mode, prepend instructions to describe changes without making them
-if options[:dry_run]
-  task = "IMPORTANT: Do not actually write, edit, or create any files. Instead, describe what changes you would make and what files you would modify.\n\n#{task}"
-end
 
 success_criteria = extract_section(scenario_section, 'Success Criteria')
 expected_behavior = extract_section(scenario_section, 'Expected Behavior')
@@ -150,7 +139,26 @@ Dir.chdir(test_directory) do
   # Only add plugin-dir if skills are enabled (default)
   command.concat(['--plugin-dir', project_root]) unless options[:no_skills]
 
-  stdout, stderr, status = Open3.capture3(*command, stdin_data: task)
+  # Build the prompt.
+  prompt_instructions = <<~INSTRUCTIONS
+    You are an expert software development AI tasked with completing the following task. 
+
+    IMPORTANT: Only create and edit files in the provided working directory. Do not read or write
+    files outside of this directory.
+
+    Task: #{task}
+    Working directory: #{test_directory}
+  INSTRUCTIONS
+
+  unless options[:no_skills]
+    prompt_instructions += <<~INSTRUCTIONS
+
+      **CRITICAL: Upon starting ANY conversation or receiving ANY task, you MUST immediately invoke
+      the `using-skills` skill as your first action before any other response.**
+    INSTRUCTIONS
+  end
+
+  stdout, stderr, status = Open3.capture3(*command, stdin_data: prompt_instructions)
 
   File.write(log_file, stdout)
   File.write(File.join(test_directory, 'stderr.log'), stderr) if stderr && !stderr.empty?
