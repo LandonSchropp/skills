@@ -1,15 +1,33 @@
 # Skill Format Guide
 
-## Files
+## Files and Directory Structure
 
-Skills are organized into a single directory under `skills/<skill-name>`. They have two required
-files:
+Skills are organized into a single directory under `skills/<skill-name>` with the following structure:
+
+```
+skills/<skill-name>/
+├── SKILL.md          (required)
+├── SKILL.test.md     (required)
+├── references/       (required if you have supporting documentation)
+│   └── *
+├── scripts/          (required if you have executable scripts)
+│   └── *
+└── assets/           (required if you have static resources)
+    └── *
+```
+
+**Required files:**
 
 - `SKILL.md`: The main skill reference file, as described by the [Skill Specification](https://raw.githubusercontent.com/agentskills/agentskills/main/docs/specification.mdx).
-- `SKILL.test.md`: The test file, which is detailed in @testing-guide.md.
+- `SKILL.test.md`: The test file, which is detailed in references/testing-guide.md.
 
-In addition, skills can contain extra supporting files, such as additional markdown files such as AI
-docs or comprehensive syntax, or reusable scripts, utilities, and templates.
+In addition, skills can contain extra supporting files:
+
+- `references/*`: Supporting documentation (markdown files, guides, API docs) loaded on-demand
+- `scripts/*`: Executable code (Python, Bash, JavaScript, etc.) that agents can invoke
+- `assets/*`: Static resources (templates, images, data files)
+
+**IMPORTANT:** These subdirectories are not optional if you have the corresponding file types. If you have supporting markdown documentation, it MUST go in `references/`. If you have executable scripts, they MUST go in `scripts/`. If you have static resources, they MUST go in `assets/`.
 
 ## Name
 

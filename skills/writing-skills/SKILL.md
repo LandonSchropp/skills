@@ -33,9 +33,9 @@ This skill teaches you how to create effective skills that agents actually follo
 
 You MUST read/fetch ALL of these documents and follow their instructions before proceeding:
 
-- @format-guide.md
-- @testing-guide.md
-- @getting-agents-to-follow-instructions.md
+- See [Format Guide](references/format-guide.md)
+- See [Testing Guide](references/testing-guide.md)
+- See [Getting Agents to Follow Instructions](references/getting-agents-to-follow-instructions.md)
 - [Skill Specification](https://raw.githubusercontent.com/agentskills/agentskills/main/docs/specification.mdx)
 - [Skill Authoring Best Practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices.md)
 - [Persuasion Principles](https://raw.githubusercontent.com/obra/superpowers/main/skills/writing-skills/persuasion-principles.md)
@@ -64,16 +64,16 @@ Run `generate-template <skill-directory>` to create both `SKILL.md` and `SKILL.t
 
 **IMPORTANT: Use TodoWrite to create todos for EACH checklist item below.**
 
-- [ ] Red: Create test scenarios following @testing-guide.md.
+- [ ] Red: Create test scenarios following references/testing-guide.md.
 - [ ] Red: Run the scenarios WITHOUT skill. Document the baseline behavior before the skill is added.
 - [ ] Red: Identify patterns in rationalizations/failures.
 - [ ] Green: Run `generate-template <skill-directory>` to create skill files.
 - [ ] Green: Fill in `SKILL.test.md` with test scenarios identified from the Red phase.
-- [ ] Green: Write `SKILL.md` following the generated template and @format-guide.md.
+- [ ] Green: Write `SKILL.md` following the generated template and references/format-guide.md.
 - [ ] Green: Address the specific baseline failures identified in Red phase.
 - [ ] Green: Include one excellent example.
 - [ ] Green: Run the test scenarios WITH the skill. Verify agents now comply.
 - [ ] Refactor: Identify NEW rationalizations from testing.
-- [ ] Refactor: Add explicit counters following @getting-agents-to-follow-instructions.md.
+- [ ] Refactor: Add explicit counters following references/getting-agents-to-follow-instructions.md.
 - [ ] Refactor: Build rationalization table from all test iterations.
 - [ ] Refactor: Re-test and iterate until bulletproof.

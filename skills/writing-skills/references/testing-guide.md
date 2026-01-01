@@ -78,7 +78,7 @@ Read the SKILL.test.md file for the skill to understand the scenarios.
 Spawn separate subagents for each scenario with the following prompt (minus the `prettier-ignore` comments):
 
 ```markdown
-You're running a single skill test using the `run-skill-test` script. Run `run-skill-test --help` for usage instructions. The script will respond with the following format:
+You're running a single skill test using the `scripts/run-skill-test` script. Run `scripts/run-skill-test --help` for usage instructions. The script will respond with the following format:
 
 <!-- prettier-ignore-start -->
 \`\`\`json
@@ -198,4 +198,4 @@ Run same scenarios WITH skill. Agent should now comply.
 
 ### Refactor: Close Loopholes
 
-Agent found new rationalization? Add explicit counter following `getting-agents-to-follow-instructions.md`. Re-test until everything passes.
+Agent found new rationalization? Add explicit counter following `references/getting-agents-to-follow-instructions.md`. Re-test until everything passes.
