@@ -7,9 +7,7 @@ require 'open3'
 require 'optparse'
 
 options = {
-  no_plugin: false,
-  task: nil,
-  number: nil
+  no_plugin: false
 }
 
 parser = OptionParser.new do |opts|
@@ -61,11 +59,11 @@ end
 task = options[:task]
 number = options[:number]
 
-script_dir = File.dirname(__FILE__)
-project_root = File.expand_path('../..', script_dir)
+script_directory = File.dirname(__FILE__)
+project_root = File.expand_path('../..', script_directory)
 
-dir_name = number ? "skill-test-run-#{number}" : 'skill-test-run'
-test_directory = File.join(project_root, 'tmp', dir_name)
+directory_name = number ? "skill-test-run-#{number}" : 'skill-test-run'
+test_directory = File.join(project_root, 'tmp', directory_name)
 FileUtils.rm_rf(test_directory) if File.exist?(test_directory)
 FileUtils.mkdir_p(test_directory)
 

@@ -6,7 +6,6 @@ require 'open3'
 require 'optparse'
 
 options = {
-  task: nil,
   count: 5,
   expected_skills: [],
   no_plugin: false
@@ -66,8 +65,8 @@ task = options[:task]
 count = options[:count]
 expected_skills = options[:expected_skills]
 
-script_dir = File.dirname(__FILE__)
-run_scenario_script = File.join(script_dir, 'run-skill-scenario')
+script_directory = File.dirname(__FILE__)
+run_scenario_script = File.join(script_directory, 'run-skill-scenario')
 
 ractors = count.times.map do |i|
   Ractor.new(i, run_scenario_script, task, options[:no_plugin], expected_skills) do |index, script, task_text, no_plugin, expected|

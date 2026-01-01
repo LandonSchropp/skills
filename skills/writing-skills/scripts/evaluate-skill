@@ -1,0 +1,115 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'json'
+require 'open3'
+require 'optparse'
+require 'yaml'
+
+options = {
+  count: 5,
+  no_plugin: false
+}
+
+parser = OptionParser.new do |opts|
+  opts.summary_indent = ""
+  opts.banner = "Usage: evaluate-skill --yaml-file <file> [OPTIONS]"
+  opts.separator ""
+  opts.separator "Runs all test scenarios from a SKILL.test.yml file and displays results."
+  opts.separator ""
+  opts.separator "Required Arguments:"
+  opts.separator ""
+
+  opts.on("--yaml-file <file>", "Path to the YAML file containing test scenarios") do
+    options[:yaml_file] = _1
+  end
+
+  opts.separator ""
+  opts.separator "Options:"
+  opts.separator ""
+
+  opts.on("--count <number>", Integer, "Number of times to run each scenario (default: 5)") do
+    options[:count] = _1
+  end
+
+  opts.on("--threshold <rate>", Float, "Pass rate threshold (default: (count-1)/count, 1.0 for count=1)") do
+    options[:threshold] = _1
+  end
+
+  opts.on("--no-plugin", "Disables the plugin directory (no skills available)") do
+    options[:no_plugin] = true
+  end
+
+  opts.on("--help", "Displays the usage information.") do
+    puts opts
+    exit 0
+  end
+
+  opts.separator ""
+  opts.separator "Examples:"
+  opts.separator ""
+  opts.separator '    evaluate-skill --yaml-file SKILL.test.yml'
+  opts.separator '    evaluate-skill --yaml-file SKILL.test.yml --count 10 --threshold 0.9'
+end
+
+parser.parse!
+
+if options[:yaml_file].nil?
+  puts "Error: --yaml-file is required"
+  puts ""
+  puts parser
+  exit 1
+end
+
+yaml_file = options[:yaml_file]
+count = options[:count]
+threshold = options[:threshold] || (count == 1 ? 1.0 : (count - 1).to_f / count)
+
+unless File.exist?(yaml_file)
+  puts "Error: #{yaml_file} not found"
+  exit 1
+end
+
+yaml_content = YAML.load_file(yaml_file)
+scenarios = yaml_content['scenarios']
+
+unless scenarios && scenarios.is_a?(Array)
+  puts "Error: YAML file must contain a 'scenarios' array"
+  exit 1
+end
+
+script_directory = File.dirname(__FILE__)
+evaluate_scenario_script = File.join(script_directory, 'evaluate-skill-scenario')
+
+scenarios.each_with_index do |scenario, index|
+  scenario_number = index + 1
+  scenario_title = scenario['scenario']
+  task = scenario['task']
+  expected_skills = scenario['expected_skills'] || []
+
+  command = [
+    evaluate_scenario_script,
+    '--task', task,
+    '--count', count.to_s
+  ]
+
+  expected_skills.each do |skill|
+    command.concat(['--expected-skill', skill])
+  end
+
+  command << '--no-plugin' if options[:no_plugin]
+
+  stdout, stderr, status = Open3.capture3(*command)
+  result = JSON.parse(stdout)
+
+  pass_rate = result.dig('summary', 'skills_pass_rate')
+  passed = result.dig('summary', 'skills_passed')
+  total = result.dig('summary', 'total_runs')
+
+  percentage = (pass_rate * 100).round
+  status_symbol = pass_rate >= threshold ? '✓' : '×'
+
+  puts "#{scenario_number}. #{scenario_title}"
+  puts "   #{status_symbol} #{percentage.to_s.rjust(3)}% Skills (#{passed}/#{total} passed)"
+  puts ""
+end
