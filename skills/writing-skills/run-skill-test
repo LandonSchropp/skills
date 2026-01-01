@@ -4,23 +4,70 @@
 require 'fileutils'
 require 'json'
 require 'open3'
+require 'optparse'
 
-# Runs a skill test scenario by:
-#
-# 1. Reading the SKILL.test.md file from the skill directory
-# 2. Extracting the specified scenario
-# 3. Creating a test directory
-# 4. Running Claude with the task
-# 5. Extracting skills invoked from JSON output
-# 6. Returning test data for subagent to validate
+# Parse the provided options
+options = {
+  dry_run: false,
+  no_skills: false,
+  directory: nil,
+  scenario: nil
+}
 
-if ARGV.length != 2
-  puts 'Usage: run-skill-test <skill-directory> <scenario-number>'
+parser = OptionParser.new do |opts|
+  opts.summary_indent = ""
+  opts.banner = "Usage: run-skill-test --directory <directory> --scenario <number> [OPTIONS]"
+  opts.separator ""
+  opts.separator "Runs a skill test scenario by executing a task with Claude and validating the results."
+  opts.separator ""
+  opts.separator "Required Arguments:"
+  opts.separator ""
+
+  opts.on("--directory <directory>", "Path to the skill directory containing SKILL.test.md") do |dir|
+    options[:directory] = dir
+  end
+
+  opts.on("--scenario <number>", Integer, "The scenario number to run (1-based index)") do |num|
+    options[:scenario] = num
+  end
+
+  opts.separator ""
+  opts.separator "Options:"
+  opts.separator ""
+
+  opts.on("--dry-run", "Instructs the agent to not write any files") do
+    options[:dry_run] = true
+  end
+
+  opts.on("--no-skills", "Configures the agent to not use any skills (helpful for baseline)") do
+    options[:no_skills] = true
+  end
+
+  opts.on("--help", "Displays the usage information.") do
+    puts opts
+    exit 0
+  end
+
+  opts.separator ""
+  opts.separator "Examples:"
+  opts.separator ""
+  opts.separator "    run-skill-test --directory ./skills/my-skill --scenario 1"
+  opts.separator "    run-skill-test --directory ./skills/my-skill --scenario 2 --dry-run"
+  opts.separator "    run-skill-test --directory ./skills/my-skill --scenario 3 --no-skills"
+end
+
+parser.parse!
+
+# Validate required arguments
+if options[:directory].nil? || options[:scenario].nil?
+  puts "Error: Both --directory and --scenario are required"
+  puts ""
+  puts parser
   exit 1
 end
 
-skill_directory = ARGV[0]
-scenario_number = ARGV[1].to_i
+skill_directory = options[:directory]
+scenario_number = options[:scenario]
 
 # Helper methods to extract headers and sections from markdown.
 #
@@ -66,6 +113,12 @@ scenario_section = extract_section(test_content, "Scenario #{scenario_number}")
 
 # Extract subsections from the scenario
 task = extract_section(scenario_section, 'Task For Subagent')
+
+# If dry-run mode, prepend instructions to describe changes without making them
+if options[:dry_run]
+  task = "IMPORTANT: Do not actually write, edit, or create any files. Instead, describe what changes you would make and what files you would modify.\n\n#{task}"
+end
+
 success_criteria = extract_section(scenario_section, 'Success Criteria')
 expected_behavior = extract_section(scenario_section, 'Expected Behavior')
   &.gsub("- [ ] ", "")
@@ -91,9 +144,11 @@ Dir.chdir(test_directory) do
     '--print',
     '--verbose',
     '--output-format', 'stream-json',
-    '--dangerously-skip-permissions',
-    '--plugin-dir', project_root
+    '--dangerously-skip-permissions'
   ]
+
+  # Only add plugin-dir if skills are enabled (default)
+  command.concat(['--plugin-dir', project_root]) unless options[:no_skills]
 
   stdout, stderr, status = Open3.capture3(*command, stdin_data: task)
 

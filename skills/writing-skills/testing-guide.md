@@ -78,7 +78,7 @@ Read the SKILL.test.md file for the skill to understand the scenarios.
 Spawn subagents for each scenario with the following prompt (minus the `prettier-ignore` comments):
 
 ```markdown
-You're running a single skill test. Run `run-skill-test <skill-directory> <scenario-number>`. The script will respond with the following format:
+You're running a single skill test using the `run-skill-test` script. Run `run-skill-test --help` for usage instructions. The script will respond with the following format:
 
 <!-- prettier-ignore-start -->
 \`\`\`json
