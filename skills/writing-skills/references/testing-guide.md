@@ -67,97 +67,13 @@ Skill test scenarios are located in the `SKILL.test.md` file. This file is autom
 
 ## How to Run Skill Tests
 
-**You (the agent reading this) are the test orchestrator.** You spawn a subagent to run the test and validate the results.
+Run the script with the skill's SKILL.test.yml file:
 
-### Step 1: Read SKILL.test.md
-
-Read the SKILL.test.md file for the skill to understand the scenarios.
-
-### Step 2: Run Each Scenario Individually
-
-Spawn separate subagents for each scenario with the following prompt (minus the `prettier-ignore` comments):
-
-```markdown
-You're running a single skill test using the `scripts/run-skill-test` script. Run `scripts/run-skill-test --help` for usage instructions. The script will respond with the following format:
-
-<!-- prettier-ignore-start -->
-\`\`\`json
-{
-  "skill_name": string,
-  "scenario_number": number,
-  "scenario_title": string,
-  "task": string,
-  "expected_behavior": string[],
-  "success_criteria": string,
-  "log_file": string,
-  "result": Array<{ type: "skill" | "assistant", name?: string, message?: string }>
-}
-\`\`\`
-<!-- prettier-ignore-end -->
-
-Evaluate the resulting data against the `expected_behavior` and `success_criteria`. Read the provided `log_file` for detailed output if needed.
-
-Report the results in the following format:
-
-<!-- prettier-ignore-start -->
-\`\`\`json
-{
-  "test": string,
-  "status": "PASS" | "FAIL",
-  "reason": string
-}
-\`\`\`
-<!-- prettier-ignore-end -->
-
-### Examples
-
-**Script output example:**
-
-\`\`\`json
-{
-"skill_name": "using-skills",
-"scenario_number": 1,
-"scenario_title": "Scenario 1: Simple task",
-"task": "Write a function in JavaScript that adds two numbers. Create it in add.js.",
-"expected_behavior": [
-"Subagent should invoke the using-skills skill first",
-"Subagent should announce: \\"Using using-skills to \[purpose\]\\""
-],
-"success_criteria": "Subagent invokes using-skills and announces it before doing anything else",
-"log_file": "/path/to/tmp/skill-name/scenario-1/claude-output.json",
-"result": \[
-{ "type": "skill", "name": "ls:using-skills" },
-{
-"type": "assistant",
-"message": "Using using-skills to establish skill usage protocol."
-},
-{ "type": "assistant", "message": "I'll create the add.js file..." }
-\]
-}
-\`\`\`
-
-**Passing test report:**
-
-\`\`\`json
-{
-"test": "Scenario 1: Simple task",
-"status": "PASS",
-"reason": "Subagent invoked ls:using-skills as the first action and announced its usage"
-}
-\`\`\`
-
-**Failing test report:**
-
-\`\`\`json
-{
-"test": "Scenario 1: Simple task",
-"status": "FAIL",
-"reason": "Subagent did not invoke using-skills. Expected ['using-skills'] but got []"
-}
-\`\`\`
+```bash
+scripts/evaluate-skill --yaml-file skills/<skill-name>/SKILL.test.yml
 ```
 
-CRITICAL: DO NOT USE SCRIPTS TO LOOP THROUGH SCENARIOS. ALWAYS INVOKE ONE SUBAGENT PER SCENARIO. DO NOT use bash loops (for/while) to run multiple scenarios. Each scenario MUST be run individually with separate subagents. Bash loops screw up the context and require manual approval. This is non-negotiable.
+Run `scripts/evaluate-skill --help` for a list of the parameters.
 
 ## Common Rationalizations for Skipping Testing
 
