@@ -73,9 +73,9 @@ Skill test scenarios are located in the `SKILL.test.md` file. This file is autom
 
 Read the SKILL.test.md file for the skill to understand the scenarios.
 
-### Step 2: Run Subagent
+### Step 2: Run Each Scenario Individually
 
-Spawn subagents for each scenario with the following prompt (minus the `prettier-ignore` comments):
+Spawn separate subagents for each scenario with the following prompt (minus the `prettier-ignore` comments):
 
 ```markdown
 You're running a single skill test using the `run-skill-test` script. Run `run-skill-test --help` for usage instructions. The script will respond with the following format:
@@ -156,6 +156,8 @@ Report the results in the following format:
 }
 \`\`\`
 ```
+
+CRITICAL: DO NOT USE SCRIPTS TO LOOP THROUGH SCENARIOS. ALWAYS INVOKE ONE SUBAGENT PER SCENARIO. DO NOT use bash loops (for/while) to run multiple scenarios. Each scenario MUST be run individually with separate subagents. Bash loops screw up the context and require manual approval. This is non-negotiable.
 
 ## Common Rationalizations for Skipping Testing
 
