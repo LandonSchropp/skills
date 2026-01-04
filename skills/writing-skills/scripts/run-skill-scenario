@@ -3,8 +3,12 @@
 
 require 'fileutils'
 require 'json'
-require 'open3'
 require 'optparse'
+require_relative 'commands'
+
+def log(scenario_number, run_number, message)
+  $stderr.puts "\033[34m[run-skill-scenario] - Scenario #{scenario_number} - Run #{run_number} - #{message}\033[0m"
+end
 
 options = {
   no_plugin: false
@@ -12,7 +16,7 @@ options = {
 
 parser = OptionParser.new do |opts|
   opts.summary_indent = ""
-  opts.banner = "Usage: run-skill-scenario --task <task> [OPTIONS]"
+  opts.banner = "Usage: run-skill-scenario --task <task> --scenario-number <number> --run-number <number> [OPTIONS]"
   opts.separator ""
   opts.separator "Runs a single task with Claude and outputs the skills invoked and conversation log."
   opts.separator ""
@@ -23,13 +27,17 @@ parser = OptionParser.new do |opts|
     options[:task] = _1
   end
 
+  opts.on("--scenario-number <number>", Integer, "The scenario number") do
+    options[:scenario_number] = _1
+  end
+
+  opts.on("--run-number <number>", Integer, "The run number") do
+    options[:run_number] = _1
+  end
+
   opts.separator ""
   opts.separator "Options:"
   opts.separator ""
-
-  opts.on("--number <n>", Integer, "Run number (for parallel execution)") do
-    options[:number] = _1
-  end
 
   opts.on("--no-plugin", "Disables the plugin directory (no skills available)") do
     options[:no_plugin] = true
@@ -56,30 +64,38 @@ if options[:task].nil?
   exit 1
 end
 
+if options[:scenario_number].nil?
+  puts "Error: --scenario-number is required"
+  puts ""
+  puts parser
+  exit 1
+end
+
+if options[:run_number].nil?
+  puts "Error: --run-number is required"
+  puts ""
+  puts parser
+  exit 1
+end
+
 task = options[:task]
-number = options[:number]
+scenario_number = options[:scenario_number]
+run_number = options[:run_number]
+
+log(scenario_number, run_number, "Starting")
 
 script_directory = File.dirname(__FILE__)
 project_root = File.expand_path('../..', script_directory)
 
-directory_name = number ? "skill-test-run-#{number}" : 'skill-test-run'
+directory_name = "skill-test-run-#{scenario_number}-#{run_number}"
 test_directory = File.join(project_root, 'tmp', directory_name)
 FileUtils.rm_rf(test_directory) if File.exist?(test_directory)
 FileUtils.mkdir_p(test_directory)
 
 log_file = File.join(test_directory, 'conversation.json')
+claude_log_file = File.join(test_directory, 'run-skill-scenario-claude.log')
 
 Dir.chdir(test_directory) do
-  command = [
-    'claude',
-    '--print',
-    '--verbose',
-    '--output-format', 'stream-json',
-    '--dangerously-skip-permissions'
-  ]
-
-  command.concat(['--plugin-dir', project_root]) unless options[:no_plugin]
-
   prompt_instructions = <<~INSTRUCTIONS
     You are an expert software development AI tasked with completing the following task.
 
@@ -98,16 +114,39 @@ Dir.chdir(test_directory) do
     INSTRUCTIONS
   end
 
-  stdout, stderr, status = Open3.capture3(*command, stdin_data: prompt_instructions)
+  command = [
+    'claude',
+    '--verbose',
+    '--output-format', 'stream-json',
+    '--dangerously-skip-permissions',
+    *(options[:no_plugin] ? [] : ['--plugin-dir', project_root]),
+    '--print',
+    prompt_instructions
+  ]
+
+  log(scenario_number, run_number, "Executing Claude Code: #{claude_log_file}")
+
+  begin
+    stdout, exit_status = run_command(command)
+  rescue => e
+    log(scenario_number, run_number, "Error: #{e.message}")
+    exit 1
+  end
+
+  unless exit_status == 0
+    log(scenario_number, run_number, "Error: Claude failed with exit code #{exit_status}")
+    exit exit_status
+  end
 
   File.write(log_file, stdout)
-  File.write(File.join(test_directory, 'stderr.log'), stderr) if stderr && !stderr.empty?
+  File.write(claude_log_file, stdout)
 end
 
-skills = File.read(log_file)
-  .split("\n")
-  .map { JSON.parse(_1) }
-  .flat_map do |data|
+begin
+  skills = File.read(log_file)
+    .split("\n")
+    .map { JSON.parse(_1) }
+    .flat_map do |data|
     if data['type'] == 'assistant' && data['message']
       content = data.dig('message', 'content')
       next unless content.is_a?(Array)
@@ -121,6 +160,11 @@ skills = File.read(log_file)
   end
   .compact
   .uniq
+rescue JSON::ParserError => e
+  log(scenario_number, run_number, "Error: Failed to parse conversation log")
+  $stderr.puts e.message
+  exit 1
+end
 
 output = {
   task: task,
@@ -129,4 +173,5 @@ output = {
   conversation_log: log_file
 }
 
+log(scenario_number, run_number, "Complete")
 puts JSON.pretty_generate(output)
