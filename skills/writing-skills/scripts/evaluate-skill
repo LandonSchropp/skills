@@ -45,7 +45,8 @@ end
 
 options = {
   number_of_runs: DEFAULT_NUMBER_OF_RUNS,
-  no_plugin: false
+  no_plugin: false,
+  scenarios: []
 }
 
 parser = OptionParser.new do |opts|
@@ -73,6 +74,10 @@ parser = OptionParser.new do |opts|
     options[:pass_threshold] = _1
   end
 
+  opts.on("--scenario <number>", Integer, "Run specific scenario number (can be specified multiple times)") do
+    options[:scenarios] << _1
+  end
+
   opts.on("--no-plugin", "Disables the plugin directory (no skills available)") do
     options[:no_plugin] = true
   end
@@ -87,6 +92,7 @@ parser = OptionParser.new do |opts|
   opts.separator ""
   opts.separator '    evaluate-skill --yaml-file SKILL.test.yml'
   opts.separator '    evaluate-skill --yaml-file SKILL.test.yml --number-of-runs 10 --pass-threshold 0.9'
+  opts.separator '    evaluate-skill --yaml-file SKILL.test.yml --scenario 1 --scenario 3'
 end
 
 parser.parse!
@@ -115,11 +121,30 @@ unless scenarios && scenarios.is_a?(Array)
   exit 1
 end
 
+# Filter scenarios if specific scenario numbers were provided
+scenario_entries = if options[:scenarios].empty?
+  # Run all scenarios with their original numbers (1-indexed)
+  scenarios.map.with_index(1) { |scenario, index| [index, scenario] }
+else
+  scenario_numbers = options[:scenarios].sort.uniq
+
+  # Validate that all requested scenarios exist
+  invalid_scenarios = scenario_numbers.select { |n| n < 1 || n > scenarios.size }
+  unless invalid_scenarios.empty?
+    $stderr.puts "Error: Invalid scenario number(s): #{invalid_scenarios.join(', ')}"
+    $stderr.puts "Valid scenario numbers are 1-#{scenarios.size}"
+    exit 1
+  end
+
+  # Filter to only the requested scenarios, preserving original numbers
+  scenario_numbers.map { |n| [n, scenarios[n - 1]] }
+end
+
 script_directory = File.dirname(__FILE__)
 evaluate_scenario_script = File.join(script_directory, 'evaluate-skill-scenario')
 
 # Spawn all runs for all scenarios in parallel
-all_scenario_data = scenarios.map.with_index(1) do |scenario, scenario_number|
+all_scenario_data = scenario_entries.map do |scenario_number, scenario|
   scenario_title = scenario['scenario']
   task = scenario['task']
   expected_skills = scenario['expected_skills'] || []
