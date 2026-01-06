@@ -96,7 +96,7 @@ log_file = File.join(test_directory, 'conversation.json')
 claude_log_file = File.join(test_directory, 'run-skill-scenario-claude.log')
 
 Dir.chdir(test_directory) do
-  prompt_instructions = <<~INSTRUCTIONS
+  prompt = <<~PROMPT
     You are an expert software development AI tasked with completing the following task.
 
     IMPORTANT: Only create and edit files in the provided working directory. Do not read or write
@@ -104,38 +104,15 @@ Dir.chdir(test_directory) do
 
     Task: #{task}
     Working directory: #{test_directory}
-  INSTRUCTIONS
-
-  unless options[:no_plugin]
-    prompt_instructions += <<~INSTRUCTIONS
-
-      **CRITICAL: Upon starting ANY conversation or receiving ANY task, you MUST immediately invoke
-      the `using-skills` skill as your first action before any other response.**
-    INSTRUCTIONS
-  end
-
-  command = [
-    'claude',
-    '--verbose',
-    '--output-format', 'stream-json',
-    '--dangerously-skip-permissions',
-    *(options[:no_plugin] ? [] : ['--plugin-dir', project_root]),
-    '--print',
-    prompt_instructions
-  ]
+  PROMPT
 
   log(scenario_number, run_number, "Executing Claude Code: #{claude_log_file}")
 
   begin
-    stdout, exit_status = run_command(command)
+    stdout = run_claude_code(prompt: prompt, include_plugin: !options[:no_plugin])
   rescue => e
     log(scenario_number, run_number, "Error: #{e.message}")
     exit 1
-  end
-
-  unless exit_status == 0
-    log(scenario_number, run_number, "Error: Claude failed with exit code #{exit_status}")
-    exit exit_status
   end
 
   File.write(log_file, stdout)

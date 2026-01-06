@@ -2,20 +2,26 @@
 # frozen_string_literal: true
 
 require 'json'
-require 'open3'
 require 'optparse'
+require_relative 'commands'
+
+def log(scenario_number, run_number, message)
+  $stderr.puts "\033[36m[evaluate-skill-scenario] - Scenario #{scenario_number} - Run #{run_number} - #{message}\033[0m"
+end
 
 options = {
-  count: 5,
   expected_skills: [],
-  no_plugin: false
+  unexpected_skills: [],
+  expected_results: [],
+  no_plugin: false,
+  run_number: 1
 }
 
 parser = OptionParser.new do |opts|
   opts.summary_indent = ""
-  opts.banner = "Usage: evaluate-skill-scenario --task <task> [OPTIONS]"
+  opts.banner = "Usage: evaluate-skill-scenario --task <task> --scenario-number <number> --run-number <number> [OPTIONS]"
   opts.separator ""
-  opts.separator "Runs a task multiple times and evaluates if expected skills were invoked."
+  opts.separator "Runs and evaluates a single skill scenario."
   opts.separator ""
   opts.separator "Required Arguments:"
   opts.separator ""
@@ -24,16 +30,28 @@ parser = OptionParser.new do |opts|
     options[:task] = _1
   end
 
+  opts.on("--scenario-number <number>", Integer, "The scenario number") do
+    options[:scenario_number] = _1
+  end
+
+  opts.on("--run-number <number>", Integer, "The run number (defaults to 1)") do
+    options[:run_number] = _1
+  end
+
   opts.separator ""
   opts.separator "Options:"
   opts.separator ""
 
-  opts.on("--count <number>", Integer, "Number of times to run the scenario (default: 5)") do
-    options[:count] = _1
-  end
-
   opts.on("--expected-skill <skill>", "Skill that should be invoked (can be specified multiple times)") do
     options[:expected_skills] << _1
+  end
+
+  opts.on("--unexpected-skill <skill>", "Skill that should NOT be invoked (can be specified multiple times)") do
+    options[:unexpected_skills] << _1
+  end
+
+  opts.on("--expected-result <result>", "Expected result/behavior (can be specified multiple times)") do
+    options[:expected_results] << _1
   end
 
   opts.on("--no-plugin", "Disables the plugin directory (no skills available)") do
@@ -48,66 +66,134 @@ parser = OptionParser.new do |opts|
   opts.separator ""
   opts.separator "Examples:"
   opts.separator ""
-  opts.separator '    evaluate-skill-scenario --task "Write a function" --expected-skill using-skills'
-  opts.separator '    evaluate-skill-scenario --task "Fix a bug" --count 10 --expected-skill using-skills'
+  opts.separator '    evaluate-skill-scenario --task "Create a skill" --number 1 --expected-skill writing-skills'
+  opts.separator '    evaluate-skill-scenario --task "Fix a bug" --number 2 --unexpected-skill writing-skills'
+  opts.separator '    evaluate-skill-scenario --task "Write a readme" --number 3 --expected-result "Creates a README.md file"'
 end
 
 parser.parse!
 
 if options[:task].nil?
-  puts "Error: --task is required"
-  puts ""
-  puts parser
+  $stderr.puts "Error: --task is required"
+  $stderr.puts ""
+  $stderr.puts parser
+  exit 1
+end
+
+if options[:scenario_number].nil?
+  $stderr.puts "Error: --scenario-number is required"
+  $stderr.puts ""
+  $stderr.puts parser
   exit 1
 end
 
 task = options[:task]
-count = options[:count]
+scenario_number = options[:scenario_number]
+run_number = options[:run_number]
 expected_skills = options[:expected_skills]
+unexpected_skills = options[:unexpected_skills]
+expected_results = options[:expected_results]
+no_plugin = options[:no_plugin]
 
+# Run the scenario
 script_directory = File.dirname(__FILE__)
 run_scenario_script = File.join(script_directory, 'run-skill-scenario')
 
-ractors = count.times.map do |i|
-  Ractor.new(i, run_scenario_script, task, options[:no_plugin], expected_skills) do |index, script, task_text, no_plugin, expected|
-    run_number = index + 1
+command = [
+  run_scenario_script,
+  '--task', task,
+  '--scenario-number', scenario_number.to_s,
+  '--run-number', run_number.to_s,
+  *(no_plugin ? ['--no-plugin'] : [])
+]
 
-    command = [script, '--task', task_text, '--number', run_number.to_s]
-    command << '--no-plugin' if no_plugin
+log(scenario_number, run_number, "Running")
 
-    stdout, stderr, status = Open3.capture3(*command)
-    result_data = JSON.parse(stdout)
+begin
+  run_data, exit_status = run_command(command, json: true)
+rescue => e
+  log(scenario_number, run_number, "Error: #{e.message}")
+  exit 1
+end
 
-    skills_invoked = result_data['skills']
-    expected_skills_found = expected.select { skills_invoked.include?(_1) }
-    status = (expected.empty? || expected_skills_found.sort == expected.sort) ? 'PASS' : 'FAIL'
+unless exit_status == 0
+  log(scenario_number, run_number, "Error: run-skill-scenario failed with exit code #{exit_status}")
+  exit exit_status
+end
 
-    {
-      run: run_number,
-      skills: skills_invoked,
-      expected_skills_found: expected_skills_found,
-      status: status
+log(scenario_number, run_number, "Evaluating")
+
+skills_invoked = run_data['skills']
+conversation_log_file = run_data['conversation_log']
+
+# Evaluate expected skills
+expected_skills_results = expected_skills.map do |skill|
+  status = skills_invoked.include?(skill) ? 'PASS' : 'FAIL'
+  { 'skill' => skill, 'status' => status }
+end
+
+# Evaluate unexpected skills
+unexpected_skills_results = unexpected_skills.map do |skill|
+  # PASS if the skill was NOT invoked, FAIL if it WAS invoked
+  status = skills_invoked.include?(skill) ? 'FAIL' : 'PASS'
+  { 'skill' => skill, 'status' => status }
+end
+
+# Evaluate expected results
+expected_results_evaluations = []
+
+unless expected_results.empty?
+  evaluation_prompt = <<~PROMPT
+    Evaluate the task execution against expected results.
+
+    Task: #{task}
+    Conversation log: #{conversation_log_file}
+
+    Expected Results:
+    #{expected_results.map.with_index { "#{_2 + 1}. #{_1}" }.join("\n")}
+
+    For each expected result, include the following attributes:
+
+    - expectation: The expected result text
+    - status: PASS if clearly met, FAIL otherwise
+    - reason: null if PASS, brief (3-10 words) explanation if FAIL
+
+    Be strict - only mark PASS if there is clear evidence.
+  PROMPT
+
+  json_schema = {
+    type: 'array',
+    items: {
+      type: 'object',
+      properties: {
+        expectation: { type: 'string' },
+        status: { type: 'string', enum: ['PASS', 'FAIL'] },
+        reason: { type: ['string', 'null'] }
+      },
+      required: ['expectation', 'status', 'reason']
     }
+  }
+
+  begin
+    expected_results_evaluations = run_claude_code(
+      prompt: evaluation_prompt,
+      include_plugin: false,
+      json_schema: json_schema
+    )
+  rescue => e
+    log(scenario_number, run_number, "Error: #{e.message}")
+    exit 1
   end
 end
 
-results = ractors.map(&:take)
-
-skills_passed = results.count { _1[:status] == 'PASS' }
-skills_failed = results.count { _1[:status] == 'FAIL' }
-skills_pass_rate = count.positive? ? skills_passed.to_f / count : 0.0
-
+# Build output
 output = {
-  task: task,
-  runs: count,
-  expected_skills: expected_skills,
-  results: results,
-  summary: {
-    total_runs: count,
-    skills_passed: skills_passed,
-    skills_failed: skills_failed,
-    skills_pass_rate: skills_pass_rate
-  }
+  'scenario_number' => scenario_number,
+  'run_number' => run_number,
+  'expected_skills' => expected_skills_results,
+  'unexpected_skills' => unexpected_skills_results,
+  'expected_results' => expected_results_evaluations
 }
 
+log(scenario_number, run_number, "Complete")
 puts JSON.pretty_generate(output)
