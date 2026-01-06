@@ -144,44 +144,51 @@ expected_results_evaluations = []
 
 unless expected_results.empty?
   evaluation_prompt = <<~PROMPT
-    Evaluate the task execution against expected results.
+    You are an evaluator that determines whether an AI agent successfully completed expected results. You will be provided with the original task given to the agent, a full conversation log showing what the agent did, and a list of expected results. Your job is to read the conversation log and evaluate whether the agent met each of the expected results.
 
     Task: #{task}
     Conversation log: #{conversation_log_file}
 
     Expected Results:
+
     #{expected_results.map.with_index { "#{_2 + 1}. #{_1}" }.join("\n")}
 
-    For each expected result, include the following attributes:
+    For each expected result, return an object in the evaluations array with:
 
-    - expectation: The expected result text
-    - status: PASS if clearly met, FAIL otherwise
-    - reason: null if PASS, brief (3-10 words) explanation if FAIL
+    - expectation: The expected result text (copy it exactly)
+    - status: "PASS" if clearly met, "FAIL" otherwise
+    - reason: Brief (3-10 words) explanation of why it failed (only include if FAIL)
 
-    Be strict - only mark PASS if there is clear evidence.
+    Be strict—only mark PASS if there is clear evidence in the conversation log that the agent completed that specific result.
   PROMPT
 
+  # NOTE: Claude Code's --json-schema doesn't support top-level arrays. The array must be wrapped in
+  # an object property. Don't change this to a top-level array or the command will hang
+  # indefinitely.
   json_schema = {
-    type: 'array',
-    items: {
-      type: 'object',
-      properties: {
-        expectation: { type: 'string' },
-        status: { type: 'string', enum: ['PASS', 'FAIL'] },
-        reason: { type: ['string', 'null'] }
-      },
-      required: ['expectation', 'status', 'reason']
-    }
+    type: 'object',
+    properties: {
+      evaluations: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            expectation: { type: 'string' },
+            status: { type: 'string', enum: ['PASS', 'FAIL'] },
+            reason: { type: 'string' }
+          },
+          required: ['expectation', 'status']
+        }
+      }
+    },
+    required: ['evaluations']
   }
 
   begin
-    expected_results_evaluations = run_claude_code(
-      prompt: evaluation_prompt,
-      include_plugin: false,
-      json_schema: json_schema
-    )
+    result = run_claude_code( prompt: evaluation_prompt, include_plugin: false, json_schema:)
+    expected_results_evaluations = result['evaluations']
   rescue => e
-    log(scenario_number, run_number, "Error: #{e.message}")
+    log(scenario_number, run_number, "Error evaluating expected results: #{e.message}")
     exit 1
   end
 end
