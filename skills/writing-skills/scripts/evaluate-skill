@@ -8,6 +8,41 @@ require_relative 'commands'
 
 DEFAULT_NUMBER_OF_RUNS = 3
 
+def log(scenario_number, message)
+  $stderr.puts "\033[35m[evaluate-skill] - Scenario #{scenario_number} - #{message}\033[0m"
+end
+
+def evaluate_skill_scenario(script_path, task, scenario_number, run_number, expected_skills, unexpected_skills, expected_results, no_plugin)
+  command = [
+    script_path,
+    '--task', task,
+    '--scenario-number', scenario_number.to_s,
+    '--run-number', run_number.to_s
+  ]
+
+  expected_skills.each do |skill|
+    command.concat(['--expected-skill', skill])
+  end
+
+  unexpected_skills.each do |skill|
+    command.concat(['--unexpected-skill', skill])
+  end
+
+  expected_results.each do |result|
+    command.concat(['--expected-result', result])
+  end
+
+  command << '--no-plugin' if no_plugin
+
+  output, exit_status = run_command(command, json: true, stream_stderr: false, timeout: 600)
+
+  if exit_status != 0
+    raise "evaluate-skill-scenario failed with exit code #{exit_status}"
+  end
+
+  output
+end
+
 options = {
   number_of_runs: DEFAULT_NUMBER_OF_RUNS,
   no_plugin: false
@@ -83,79 +118,92 @@ end
 script_directory = File.dirname(__FILE__)
 evaluate_scenario_script = File.join(script_directory, 'evaluate-skill-scenario')
 
-scenarios.each_with_index do |scenario, index|
-  scenario_number = index + 1
+# Spawn all runs for all scenarios in parallel
+all_scenario_data = scenarios.map.with_index(1) do |scenario, scenario_number|
   scenario_title = scenario['scenario']
   task = scenario['task']
   expected_skills = scenario['expected_skills'] || []
   unexpected_skills = scenario['unexpected_skills'] || []
   expected_results = scenario['expected_results'] || []
 
-  # Spawn multiple runs in parallel
+  log(scenario_number, "Starting #{number_of_runs} run#{number_of_runs > 1 ? 's' : ''}")
+
   threads = (1..number_of_runs).map do |run_number|
     Thread.new do
-      command = [
-        evaluate_scenario_script,
-        '--task', task,
-        '--scenario-number', scenario_number.to_s,
-        '--run-number', run_number.to_s
-      ]
-
-      expected_skills.each do |skill|
-        command.concat(['--expected-skill', skill])
-      end
-
-      unexpected_skills.each do |skill|
-        command.concat(['--unexpected-skill', skill])
-      end
-
-      expected_results.each do |result|
-        command.concat(['--expected-result', result])
-      end
-
-      command << '--no-plugin' if options[:no_plugin]
-
-      output, exit_status = run_command(command, json: true, stream_stderr: false)
-
-      if exit_status != 0
-        $stderr.puts "Error: evaluate-skill-scenario failed for scenario #{scenario_number}, run #{run_number}"
+      begin
+        evaluate_skill_scenario(
+          evaluate_scenario_script,
+          task,
+          scenario_number,
+          run_number,
+          expected_skills,
+          unexpected_skills,
+          expected_results,
+          options[:no_plugin]
+        )
+      rescue => e
+        log(scenario_number, "Run #{run_number} failed: #{e.message}")
         nil
-      else
-        output
       end
     end
   end
 
-  # Wait for all threads to complete
-  results = threads.map(&:value).compact
+  {
+    scenario_number: scenario_number,
+    scenario_title: scenario_title,
+    threads: threads,
+    expected_skills: expected_skills,
+    unexpected_skills: unexpected_skills,
+    expected_results: expected_results
+  }
+end
+
+# Wait for all threads to complete and compile results
+all_scenario_data.each do |data|
+  scenario_number = data[:scenario_number]
+  scenario_title = data[:scenario_title]
+  expected_skills = data[:expected_skills]
+  unexpected_skills = data[:unexpected_skills]
+  expected_results = data[:expected_results]
+
+  results = data[:threads].map(&:value).compact
 
   if results.empty?
-    $stderr.puts "Error: All runs failed for scenario #{scenario_number}"
+    log(scenario_number, "Error: All runs failed")
     next
   end
 
+  log(scenario_number, "Completed #{results.size}/#{number_of_runs} runs successfully")
+
   # Compile results
-  # Expected skills results
-  expected_skills_summary = {}
-  expected_skills.each do |skill|
-    passes = results.count { |r| r['expected_skills'].find { |s| s['skill'] == skill && s['status'] == 'PASS' } }
-    expected_skills_summary[skill] = { passed: passes, total: results.size }
-  end
-
-  # Unexpected skills results
-  unexpected_skills_summary = {}
-  unexpected_skills.each do |skill|
-    passes = results.count { |r| r['unexpected_skills'].find { |s| s['skill'] == skill && s['status'] == 'PASS' } }
-    unexpected_skills_summary[skill] = { passed: passes, total: results.size }
-  end
-
-  # Expected results summary
-  expected_results_summary = {}
-  expected_results.each do |result_text|
-    passes = results.count do |r|
-      r['expected_results'].find { |e| e['expectation'] == result_text && e['status'] == 'PASS' }
+  expected_skills_summary = expected_skills.to_h do |expected_skill|
+    passes = results.count do |result|
+      result['expected_skills'].find do |skill_result|
+        skill_result['skill'] == expected_skill && skill_result['status'] == 'PASS'
+      end
     end
-    expected_results_summary[result_text] = { passed: passes, total: results.size }
+
+    [expected_skill, { passed: passes, total: results.size }]
+  end
+
+  unexpected_skills_summary = unexpected_skills.to_h do |unexpected_skill|
+    passes = results.count do |result|
+      result['unexpected_skills'].find do |skill_result|
+        skill_result['skill'] == unexpected_skill && skill_result['status'] == 'PASS'
+      end
+    end
+
+    [unexpected_skill, { passed: passes, total: results.size }]
+  end
+
+  expected_results_summary = expected_results.to_h do |expected_result|
+    passes = results.count do |result|
+      result['expected_results'].find do |expectation_result|
+        expectation_result['expectation'] == expected_result && expectation_result['status'] == 'PASS'
+      end
+    end
+
+    [expected_result, { passed: passes, total: results.size }]
   end
 
   # Display results
