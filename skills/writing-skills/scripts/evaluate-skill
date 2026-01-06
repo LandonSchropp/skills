@@ -2,12 +2,14 @@
 # frozen_string_literal: true
 
 require 'json'
-require 'open3'
 require 'optparse'
 require 'yaml'
+require_relative 'commands'
+
+DEFAULT_NUMBER_OF_RUNS = 3
 
 options = {
-  count: 5,
+  number_of_runs: DEFAULT_NUMBER_OF_RUNS,
   no_plugin: false
 }
 
@@ -28,12 +30,12 @@ parser = OptionParser.new do |opts|
   opts.separator "Options:"
   opts.separator ""
 
-  opts.on("--count <number>", Integer, "Number of times to run each scenario (default: 5)") do
-    options[:count] = _1
+  opts.on("--number-of-runs <number>", Integer, "Number of times to run each scenario (default: #{DEFAULT_NUMBER_OF_RUNS})") do
+    options[:number_of_runs] = _1
   end
 
-  opts.on("--threshold <rate>", Float, "Pass rate threshold (default: (count-1)/count, 1.0 for count=1)") do
-    options[:threshold] = _1
+  opts.on("--pass-threshold <rate>", Float, "Pass rate threshold (default: (number_of_runs - 1) / number_of_runs)") do
+    options[:pass_threshold] = _1
   end
 
   opts.on("--no-plugin", "Disables the plugin directory (no skills available)") do
@@ -49,24 +51,24 @@ parser = OptionParser.new do |opts|
   opts.separator "Examples:"
   opts.separator ""
   opts.separator '    evaluate-skill --yaml-file SKILL.test.yml'
-  opts.separator '    evaluate-skill --yaml-file SKILL.test.yml --count 10 --threshold 0.9'
+  opts.separator '    evaluate-skill --yaml-file SKILL.test.yml --number-of-runs 10 --pass-threshold 0.9'
 end
 
 parser.parse!
 
 if options[:yaml_file].nil?
-  puts "Error: --yaml-file is required"
-  puts ""
-  puts parser
+  $stderr.puts "Error: --yaml-file is required"
+  $stderr.puts ""
+  $stderr.puts parser
   exit 1
 end
 
 yaml_file = options[:yaml_file]
-count = options[:count]
-threshold = options[:threshold] || (count == 1 ? 1.0 : (count - 1).to_f / count)
+number_of_runs = options[:number_of_runs]
+pass_threshold = options[:pass_threshold] || ((number_of_runs - 1).to_f / number_of_runs)
 
 unless File.exist?(yaml_file)
-  puts "Error: #{yaml_file} not found"
+  $stderr.puts "Error: #{yaml_file} not found"
   exit 1
 end
 
@@ -74,7 +76,7 @@ yaml_content = YAML.load_file(yaml_file)
 scenarios = yaml_content['scenarios']
 
 unless scenarios && scenarios.is_a?(Array)
-  puts "Error: YAML file must contain a 'scenarios' array"
+  $stderr.puts "Error: YAML file must contain a 'scenarios' array"
   exit 1
 end
 
@@ -86,30 +88,110 @@ scenarios.each_with_index do |scenario, index|
   scenario_title = scenario['scenario']
   task = scenario['task']
   expected_skills = scenario['expected_skills'] || []
+  unexpected_skills = scenario['unexpected_skills'] || []
+  expected_results = scenario['expected_results'] || []
 
-  command = [
-    evaluate_scenario_script,
-    '--task', task,
-    '--count', count.to_s
-  ]
+  # Spawn multiple runs in parallel
+  threads = (1..number_of_runs).map do |run_number|
+    Thread.new do
+      command = [
+        evaluate_scenario_script,
+        '--task', task,
+        '--scenario-number', scenario_number.to_s,
+        '--run-number', run_number.to_s
+      ]
 
-  expected_skills.each do |skill|
-    command.concat(['--expected-skill', skill])
+      expected_skills.each do |skill|
+        command.concat(['--expected-skill', skill])
+      end
+
+      unexpected_skills.each do |skill|
+        command.concat(['--unexpected-skill', skill])
+      end
+
+      expected_results.each do |result|
+        command.concat(['--expected-result', result])
+      end
+
+      command << '--no-plugin' if options[:no_plugin]
+
+      output, exit_status = run_command(command, json: true, stream_stderr: false)
+
+      if exit_status != 0
+        $stderr.puts "Error: evaluate-skill-scenario failed for scenario #{scenario_number}, run #{run_number}"
+        nil
+      else
+        output
+      end
+    end
   end
 
-  command << '--no-plugin' if options[:no_plugin]
+  # Wait for all threads to complete
+  results = threads.map(&:value).compact
 
-  stdout, stderr, status = Open3.capture3(*command)
-  result = JSON.parse(stdout)
+  if results.empty?
+    $stderr.puts "Error: All runs failed for scenario #{scenario_number}"
+    next
+  end
 
-  pass_rate = result.dig('summary', 'skills_pass_rate')
-  passed = result.dig('summary', 'skills_passed')
-  total = result.dig('summary', 'total_runs')
+  # Compile results
+  # Expected skills results
+  expected_skills_summary = {}
+  expected_skills.each do |skill|
+    passes = results.count { |r| r['expected_skills'].find { |s| s['skill'] == skill && s['status'] == 'PASS' } }
+    expected_skills_summary[skill] = { passed: passes, total: results.size }
+  end
 
-  percentage = (pass_rate * 100).round
-  status_symbol = pass_rate >= threshold ? '✓' : '×'
+  # Unexpected skills results
+  unexpected_skills_summary = {}
+  unexpected_skills.each do |skill|
+    passes = results.count { |r| r['unexpected_skills'].find { |s| s['skill'] == skill && s['status'] == 'PASS' } }
+    unexpected_skills_summary[skill] = { passed: passes, total: results.size }
+  end
 
+  # Expected results summary
+  expected_results_summary = {}
+  expected_results.each do |result_text|
+    passes = results.count do |r|
+      r['expected_results'].find { |e| e['expectation'] == result_text && e['status'] == 'PASS' }
+    end
+    expected_results_summary[result_text] = { passed: passes, total: results.size }
+  end
+
+  # Display results
   puts "#{scenario_number}. #{scenario_title}"
-  puts "   #{status_symbol} #{percentage.to_s.rjust(3)}% Skills (#{passed}/#{total} passed)"
+
+  # Skills
+  unless expected_skills.empty?
+    expected_skills.each do |skill|
+      summary = expected_skills_summary[skill]
+      pass_rate = summary[:passed].to_f / summary[:total]
+      percentage = (pass_rate * 100).round
+      status_symbol = pass_rate >= pass_threshold ? '✓' : '×'
+      puts "   #{status_symbol} #{percentage.to_s.rjust(3)}% Expected skill: #{skill} (#{summary[:passed]}/#{summary[:total]} passed)"
+    end
+  end
+
+  unless unexpected_skills.empty?
+    unexpected_skills.each do |skill|
+      summary = unexpected_skills_summary[skill]
+      pass_rate = summary[:passed].to_f / summary[:total]
+      percentage = (pass_rate * 100).round
+      status_symbol = pass_rate >= pass_threshold ? '✓' : '×'
+      puts "   #{status_symbol} #{percentage.to_s.rjust(3)}% Unexpected skill: #{skill} (#{summary[:passed]}/#{summary[:total]} not invoked)"
+    end
+  end
+
+  # Expected results
+  unless expected_results.empty?
+    expected_results.each do |result_text|
+      summary = expected_results_summary[result_text]
+      pass_rate = summary[:passed].to_f / summary[:total]
+      percentage = (pass_rate * 100).round
+      status_symbol = pass_rate >= pass_threshold ? '✓' : '×'
+      puts "   #{status_symbol} #{percentage.to_s.rjust(3)}% #{result_text} (#{summary[:passed]}/#{summary[:total]} passed)"
+    end
+  end
+
   puts ""
 end
