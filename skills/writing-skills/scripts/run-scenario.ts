@@ -12,15 +12,15 @@ const TEMP_DIRECTORY = join(PROJECT_ROOT, "tmp");
  * Creates a temporary directory for running a scenario. If the directory already exists, it will be
  * deleted and recreated.
  *
- * @param scenarioNumber The scenario number.
- * @param runNumber The run number.
+ * @param scenarioIndex The scenario index (0-indexed).
+ * @param iteration The iteration number (0-indexed).
  * @returns The absolute path to the created directory.
  */
 async function createTemporaryScenarioDirectory(
-  scenarioNumber: number,
-  runNumber: number,
+  scenarioIndex: number,
+  iteration: number,
 ): Promise<string> {
-  const directory = join(TEMP_DIRECTORY, `scenario-${scenarioNumber}-${runNumber}`);
+  const directory = join(TEMP_DIRECTORY, `scenario-${scenarioIndex}-${iteration}`);
 
   await rm(directory, { recursive: true, force: true });
   await mkdir(directory, { recursive: true });
@@ -40,11 +40,11 @@ export async function runScenario(
   runIdentifier: RunIdentifier,
 ): Promise<ScenarioRunResult> {
   const { task } = scenario;
-  const { scenarioNumber, runNumber } = runIdentifier;
+  const { scenarioIndex, iteration } = runIdentifier;
 
   log("Starting scenario run", "cyan", runIdentifier);
 
-  const workingDirectory = await createTemporaryScenarioDirectory(scenarioNumber, runNumber);
+  const workingDirectory = await createTemporaryScenarioDirectory(scenarioIndex, iteration);
 
   let prompt = dedent`
     You are an expert software development AI tasked with completing the following task.

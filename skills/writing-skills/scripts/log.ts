@@ -9,7 +9,7 @@ const COLORS = {
 const NO_COLOR = "\x1b[0m";
 
 /**
- * Logs a message to stderr with optional scenario and run numbers.
+ * Logs a message to stderr with optional scenario and iteration numbers.
  *
  * @param message The message to log.
  * @param color Color for the log message.
@@ -20,11 +20,11 @@ export function log(
   color: keyof typeof COLORS,
   runIdentifier?: Partial<RunIdentifier>,
 ): void {
-  const { scenarioNumber, runNumber } = runIdentifier ?? {};
+  const { scenarioIndex, iteration } = runIdentifier ?? {};
 
   let formattedMessage = [
-    ...(scenarioNumber === undefined ? [] : [`Scenario ${scenarioNumber}`]),
-    ...(runNumber === undefined ? [] : [`Run ${runNumber}`]),
+    ...(scenarioIndex === undefined ? [] : [`Scenario ${scenarioIndex}`]),
+    ...(iteration === undefined ? [] : [`Iteration ${iteration}`]),
     message,
   ].join(" - ");
 

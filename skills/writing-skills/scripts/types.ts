@@ -7,10 +7,10 @@ export type Scenario = z.infer<typeof ScenarioSchema>;
 
 /** Identifies a specific scenario evaluation run. */
 export type RunIdentifier = {
-  /** The scenario number (1-indexed). */
-  scenarioNumber: number;
-  /** The run number for this scenario (1-indexed). */
-  runNumber: number;
+  /** The scenario index (0-indexed). */
+  scenarioIndex: number;
+  /** The iteration number for this scenario (0-indexed). */
+  iteration: number;
 };
 
 /** The raw result from running a scenario. */
