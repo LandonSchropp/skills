@@ -1,16 +1,9 @@
+import type { ScenarioSchema } from "./schema";
 import type { SDKMessage } from "@anthropic-ai/claude-agent-sdk";
+import type { z } from "zod";
 
 /** A test scenario for evaluating skill behavior. */
-export type Scenario = {
-  /** Human-readable description of what this scenario tests. */
-  description: string;
-  /** The task prompt to give to the agent. */
-  task: string;
-  /** List of skills that should be invoked during this scenario. */
-  expectedSkills: string[];
-  /** The expected result or behavior from running this scenario. */
-  expectation: string;
-};
+export type Scenario = z.infer<typeof ScenarioSchema>;
 
 /** Identifies a specific scenario evaluation run. */
 export type RunIdentifier = {

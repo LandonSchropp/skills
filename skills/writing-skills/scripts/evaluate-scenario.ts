@@ -89,7 +89,7 @@ export async function evaluateScenario(
   scenario: Scenario,
   runIdentifier: RunIdentifier,
 ): Promise<ScenarioEvaluation> {
-  const { task, expectation } = scenario;
+  const { task, expectedResult } = scenario;
 
   log("Running scenario", "blue", runIdentifier);
 
@@ -104,9 +104,9 @@ export async function evaluateScenario(
   // Extract invoked skills
   const invokedSkills = extractInvokedSkills(messages);
 
-  // If there's no expectation, return simple result
-  if (!expectation) {
-    log("Completed scenario evaluation without expectation", "blue", runIdentifier);
+  // If there's no expected result, return simple result
+  if (!expectedResult) {
+    log("Completed scenario evaluation without expected result", "blue", runIdentifier);
 
     return { invokedSkills };
   }
@@ -118,7 +118,7 @@ export async function evaluateScenario(
 
     Task: ${task}
 
-    Expectation: ${expectation}
+    Expectation: ${expectedResult}
 
     Conversation:
 
