@@ -1,7 +1,7 @@
 import { log } from "./log";
 import type { RunIdentifier, ScenarioRunResult } from "./types";
 import { query } from "@anthropic-ai/claude-agent-sdk";
-import { mkdir, rm } from "fs/promises";
+import { mkdir, rm, writeFile } from "fs/promises";
 import { join } from "path";
 import { dedent } from "ts-dedent";
 
@@ -42,7 +42,7 @@ export async function runScenario(
   const { task } = scenario;
   const { scenarioNumber, runNumber } = runIdentifier;
 
-  log("Starting", "cyan", runIdentifier);
+  log("Starting scenario run", "cyan", runIdentifier);
 
   const workingDirectory = await createTemporaryScenarioDirectory(scenarioNumber, runNumber);
 
@@ -72,7 +72,11 @@ export async function runScenario(
     }),
   );
 
-  log("Complete", "cyan", runIdentifier);
+  // Write messages to file for debugging
+  const messagesFile = join(workingDirectory, "messages.json");
+  await writeFile(messagesFile, JSON.stringify(messages, null, 2));
+
+  log("Completed scenario run", "cyan", runIdentifier);
 
   return { messages, workingDirectory };
 }
