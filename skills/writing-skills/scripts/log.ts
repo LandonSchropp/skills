@@ -1,3 +1,5 @@
+import type { RunIdentifier } from "./types";
+
 const COLORS = {
   blue: "\x1b[34m",
   cyan: "\x1b[36m",
@@ -10,26 +12,22 @@ const NO_COLOR = "\x1b[0m";
  * Logs a message to stderr with optional scenario and run numbers.
  *
  * @param message The message to log.
- * @param scenarioNumber Optional scenario number to include in the log.
- * @param runNumber Optional run number to include in the log.
+ * @param color Color for the log message.
+ * @param runIdentifier Optional run identifier.
  */
-export function log({
-  message,
-  scenarioNumber,
-  runNumber,
-  color,
-}: {
-  message: string;
-  scenarioNumber?: number;
-  runNumber?: number;
-  color?: keyof typeof COLORS;
-}): void {
+export function log(
+  message: string,
+  color: keyof typeof COLORS,
+  runIdentifier?: Partial<RunIdentifier>,
+): void {
+  const { scenarioNumber, runNumber } = runIdentifier ?? {};
+
   let formattedMessage = [
     ...(scenarioNumber === undefined ? [] : [`Scenario ${scenarioNumber}`]),
     ...(runNumber === undefined ? [] : [`Run ${runNumber}`]),
     message,
   ].join(" - ");
 
-  // Log the message to stderr with blue color
-  console.error(`${color ? COLORS[color] : NO_COLOR}${formattedMessage}${NO_COLOR}`);
+  // Log the message to stderr with color
+  console.error(`${COLORS[color]}${formattedMessage}${NO_COLOR}`);
 }

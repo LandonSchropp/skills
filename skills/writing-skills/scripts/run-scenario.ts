@@ -1,49 +1,9 @@
 import { log } from "./log";
-import { query, type SDKMessage } from "@anthropic-ai/claude-agent-sdk";
+import type { RunIdentifier, ScenarioRunResult } from "./types";
+import { query } from "@anthropic-ai/claude-agent-sdk";
 import { mkdir, rm } from "fs/promises";
 import { join } from "path";
 import { dedent } from "ts-dedent";
-
-/** Configuration for running a test scenario. */
-export interface ScenarioConfig {
-  /** The task prompt to give to the agent. */
-  task: string;
-  /** The scenario number (for logging and directory naming). */
-  scenarioNumber: number;
-  /** The run number (for logging and directory naming). */
-  runNumber: number;
-  /** Whether to enable the plugin (skills) for this run. */
-  pluginEnabled: boolean;
-}
-
-/** Result from running a test scenario. */
-export interface ScenarioResult {
-  /** The task that was given to the agent. */
-  task: string;
-  /** List of skills that were invoked during the run. */
-  skills: string[];
-  /** Full conversation messages from the agent SDK. */
-  messages: SDKMessage[];
-  /** The working directory where the scenario was executed. */
-  workingDirectory: string;
-}
-
-/**
- * Extracts the list of unique skill names that were invoked during a conversation.
- *
- * @param messages The conversation messages from the agent SDK.
- * @returns Array of unique skill names that were invoked.
- */
-function extractInvokedSkills(messages: SDKMessage[]): string[] {
-  const skills = messages
-    .filter((message) => message.type === "assistant")
-    .flatMap((message) => message.message.content)
-    .filter((content) => content.type === "tool_use" && content.name === "Skill")
-    .map((content) => content.input?.skill)
-    .filter((skill) => typeof skill === "string");
-
-  return [...new Set(skills)];
-}
 
 const PROJECT_ROOT = join(import.meta.dir, "../../..");
 const TEMP_DIRECTORY = join(PROJECT_ROOT, "tmp");
@@ -71,16 +31,18 @@ async function createTemporaryScenarioDirectory(
 /**
  * Runs a test scenario by spawning an agent with the given task.
  *
- * @param config The scenario configuration.
- * @returns The scenario result including skills invoked and conversation messages.
+ * @param scenario The scenario configuration.
+ * @param runIdentifier The run identifier.
+ * @returns The scenario run result including conversation messages and working directory.
  */
-export async function runScenario({
-  task,
-  scenarioNumber,
-  runNumber,
-  pluginEnabled: enablePlugin,
-}: ScenarioConfig): Promise<ScenarioResult> {
-  log({ scenarioNumber, runNumber, message: "Starting" });
+export async function runScenario(
+  scenario: { task: string },
+  runIdentifier: RunIdentifier,
+): Promise<ScenarioRunResult> {
+  const { task } = scenario;
+  const { scenarioNumber, runNumber } = runIdentifier;
+
+  log("Starting", "cyan", runIdentifier);
 
   const workingDirectory = await createTemporaryScenarioDirectory(scenarioNumber, runNumber);
 
@@ -93,7 +55,7 @@ export async function runScenario({
     Task: ${task}
     Working directory: ${workingDirectory}
 
-    \n\n**CRITICAL: Upon starting ANY conversation or receiving ANY task, you MUST immediately 
+    \n\n**CRITICAL: Upon starting ANY conversation or receiving ANY task, you MUST immediately
     invoke the \`using-skills\` skill as your first action before any other response.**
   `;
 
@@ -105,14 +67,12 @@ export async function runScenario({
         allowedTools: ["Read", "Write", "Edit", "Bash", "Glob", "Grep", "Task"],
         permissionMode: "bypassPermissions",
         allowDangerouslySkipPermissions: true,
-        ...(enablePlugin ? { plugins: [{ type: "local", path: PROJECT_ROOT }] } : {}),
+        plugins: [{ type: "local", path: PROJECT_ROOT }],
       },
     }),
   );
 
-  const skills = extractInvokedSkills(messages);
+  log("Complete", "cyan", runIdentifier);
 
-  log({ scenarioNumber, runNumber, message: "Complete" });
-
-  return { task, skills, messages, workingDirectory };
+  return { messages, workingDirectory };
 }
