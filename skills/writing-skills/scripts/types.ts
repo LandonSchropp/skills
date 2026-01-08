@@ -30,18 +30,18 @@ export type ScenarioRunResult = {
 
 /** Evaluation result for a scenario with an expectation. */
 export type ScenarioEvaluationWithExpectation = {
-  /** List of skills that were invoked during the run. */
-  invokedSkills: string[];
+  /** Set of skills that were invoked during the run. */
+  invokedSkills: Set<string>;
   /** Whether the scenario passed evaluation. */
   success: boolean;
-  /** LLM judge's explanation of the evaluation. */
+  /** LLM-as-judge's explanation of the evaluation. */
   explanation: string;
 };
 
 /** Evaluation result for a scenario without an expectation. */
 export type ScenarioEvaluationWithoutExpectation = {
-  /** List of skills that were invoked during the run. */
-  invokedSkills: string[];
+  /** Set of skills that were invoked during the run. */
+  invokedSkills: Set<string>;
   success?: never;
   explanation?: never;
 };
