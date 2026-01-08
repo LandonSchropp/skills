@@ -11,7 +11,7 @@ const NO_COLOR = "\x1b[0m";
  *
  * @param message The message to log.
  * @param scenarioNumber Optional scenario number to include in the log.
- * @param runNumber - Optional run number to include in the log.
+ * @param runNumber Optional run number to include in the log.
  */
 export function log({
   message,
