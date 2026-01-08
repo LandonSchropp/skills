@@ -1,24 +1,14 @@
----
-# Test suite for the writing-skills skill
+- description: "Forced writing-skills"
+  task: "Run the writing-skills skill"
+  expectedSkills:
+    - writing-skills
 
-scenarios:
-  - scenario: "Forced writing-skills"
-    task: "Run the writing-skills skill"
-    expected_skills:
-      - writing-skills
+- description: "Creating a new skill"
+  task: "Create a new skill called 'example-skill'. Don't run any tests."
+  expectedSkills:
+    - writing-skills
+  expectedResult: "A SKILL.md file was created and contains the proper frontmatter with name and description"
 
-  - scenario: "Creating a new skill"
-    task: "Create a new skill called 'example-skill'. Don't run any tests."
-    expected_skills:
-      - writing-skills
-    expected_results:
-      - "A SKILL.md file was created"
-      - "The skill file contains the proper frontmatter with name and description"
-
-  - scenario: "Running test scenarios (should NOT invoke writing-skills)"
-    task: "Run the test scenarios for the using-skills skill."
-    unexpected_skills:
-      - writing-skills
-    expected_results:
-      - "The test scenarios were executed"
-      - "Results were reported"
+- description: "Running test scenarios (should NOT invoke writing-skills)"
+  task: "Run the test scenarios for the using-skills skill."
+  expectedResult: "The test scenarios were executed and results were reported"

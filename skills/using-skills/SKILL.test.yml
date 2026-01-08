@@ -1,14 +1,9 @@
----
-# Test suite for the using-skills skill
-# Converted from SKILL.test.md
+- description: "Basic skill invocation on new task"
+  task: "Write a function in JavaScript that adds two numbers. Create it in add.js. Don't add tests."
+  expectedSkills:
+    - using-skills
 
-scenarios:
-  - scenario: "Basic skill invocation on new task"
-    task: "Write a function in JavaScript that adds two numbers. Create it in add.js. Don't add tests."
-    expected_skills:
-      - using-skills
-
-  - scenario: 'Pressure test - "simple question" rationalization'
-    task: "What does the factorial function do?"
-    expected_skills:
-      - using-skills
+- description: 'Pressure test - "simple question" rationalization'
+  task: "What does the factorial function do?"
+  expectedSkills:
+    - using-skills
