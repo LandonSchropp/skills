@@ -6,6 +6,20 @@ require 'optparse'
 require 'yaml'
 require_relative 'commands'
 
+# This script implements a mini evaluation harness designed to test Claude Code Skills.
+#
+# It can run multiple scenarios across several iterations, measures skill invocation and execution
+# success, stores results for analysis, and compare performance against expected thresholds.
+#
+# This evaluation harness is designed to accommodate a few primary use cases:
+#
+# - Skill validation: Determine if a skill works well enough to ship. Set thresholds like "skill
+#   should be invoked 80% of the time" and "should succeed 70% of the time when invoked."
+# - Self-improvement: Let an agent run the harness against its own skills, see what's failing, and
+#   iterate on descriptions and prompts.
+# - Experimentation: Compare variants (different AGENTS.md files, different models, different skill
+#   descriptions) to see what actually improves performance.
+
 DEFAULT_NUMBER_OF_RUNS = 3
 
 def log(scenario_number, message)
