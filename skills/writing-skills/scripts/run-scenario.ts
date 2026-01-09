@@ -73,7 +73,7 @@ export async function runScenario(
   );
 
   // Write messages to file for debugging
-  const messagesFile = join(workingDirectory, "messages.json");
+  const messagesFile = join(workingDirectory, "run-scenario-messages.json");
   await writeFile(messagesFile, JSON.stringify(messages, null, 2));
 
   log("Completed scenario run", "cyan", runIdentifier);

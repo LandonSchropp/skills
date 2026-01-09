@@ -10,6 +10,8 @@ import type {
 import { query } from "@anthropic-ai/claude-agent-sdk";
 import type { SDKMessage } from "@anthropic-ai/claude-agent-sdk";
 import type { BetaContentBlock } from "@anthropic-ai/sdk/resources/beta.mjs";
+import { writeFile } from "fs/promises";
+import { join } from "path";
 import { dedent } from "ts-dedent";
 
 function extractAssistMessageContents(messages: SDKMessage[]): BetaContentBlock[] {
@@ -113,6 +115,9 @@ export async function evaluateScenario(
     return { invokedSkills };
   }
 
+  // Write the conversation log for the evaluator
+  const conversationLogFile = join(workingDirectory, "run-scenario-messages.json");
+
   // Run an LLM-as-judge evaluation of the conversation
   const evaluationPrompt = dedent`
     You are an evaluator that determines whether an AI agent successfully completed an expected
@@ -158,6 +163,10 @@ export async function evaluateScenario(
       },
     }),
   );
+
+  // Write evaluation messages to file for debugging
+  const messagesFile = join(workingDirectory, "evaluate-scenario-messages.json");
+  await writeFile(messagesFile, JSON.stringify(evaluationMessages, null, 2));
 
   // Extract the structured output from the result message
   // The SDK validates against our schema, so we can safely cast
