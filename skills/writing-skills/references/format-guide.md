@@ -29,6 +29,20 @@ In addition, skills can contain extra supporting files:
 
 **IMPORTANT:** These subdirectories are not optional if you have the corresponding file types. If you have supporting markdown documentation, it MUST go in `references/`. If you have executable scripts, they MUST go in `scripts/`. If you have static resources, they MUST go in `assets/`.
 
+**File path convention:** All file paths referenced within skill documentation (SKILL.md, SKILL.test.yml, and reference documents) MUST be relative to the location of the SKILL.md file, not absolute paths from the project root.
+
+```markdown
+<!-- GOOD: Relative to SKILL.md -->
+
+See [Format Guide](references/format-guide.md)
+Run `scripts/evaluate-skill.ts --yamlFile SKILL.test.yml`
+
+<!-- BAD: Absolute from project root -->
+
+See skills/writing-skills/references/format-guide.md
+Run skills/writing-skills/scripts/evaluate-skill.ts
+```
+
 ## Name
 
 Use active voice, verb-first. Name by what you DO or core insight. Gerunds (-ing) work well for processes.

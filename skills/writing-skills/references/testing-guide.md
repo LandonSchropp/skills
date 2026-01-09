@@ -70,10 +70,10 @@ Skill test scenarios are located in the `SKILL.test.md` file. This file is autom
 Run the script with the skill's SKILL.test.yml file:
 
 ```bash
-scripts/evaluate-skill --yaml-file skills/<skill-name>/SKILL.test.yml
+scripts/evaluate-skill.ts --yamlFile ../<skill-name>/SKILL.test.yml
 ```
 
-Run `scripts/evaluate-skill --help` for a list of the parameters.
+Run `scripts/evaluate-skill.ts --help` for a list of the parameters.
 
 ## Common Rationalizations for Skipping Testing
 
