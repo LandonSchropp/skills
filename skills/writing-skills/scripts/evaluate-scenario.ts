@@ -22,7 +22,7 @@ function extractAssistMessageContents(messages: SDKMessage[]): BetaContentBlock[
  * Extracts the skill name from a BetaContentBlock if it represents a skill invocation.
  *
  * @param content The BetaContentBlock to extract the skill name from.
- * @returns The skill name if present, or undefined if not.
+ * @returns The skill name if present (normalized without prefix), or undefined if not.
  */
 function extractSkill(content: BetaContentBlock): string | undefined {
   // We use Skill tool uses to detect skill invocations
@@ -40,7 +40,9 @@ function extractSkill(content: BetaContentBlock): string | undefined {
     return undefined;
   }
 
-  return content.input.skill;
+  // Remove the prefix from the skill name since the evaluation harness shouldn't need to be aware
+  // of how the skills are namespaced.
+  return content.input.skill.replace(/^.*?:/, "");
 }
 
 /**
