@@ -1,7 +1,7 @@
+import { runClaudeCode } from "../agent";
 import { log } from "./log";
 import type { RunIdentifier, ScenarioRunResult } from "./types";
-import { query } from "@anthropic-ai/claude-agent-sdk";
-import { mkdir, rm, writeFile } from "fs/promises";
+import { mkdir, rm } from "fs/promises";
 import { join } from "path";
 import { dedent } from "ts-dedent";
 
@@ -59,22 +59,11 @@ export async function runScenario(
     invoke the \`using-skills\` skill as your first action before any other response.**
   `;
 
-  const messages = await Array.fromAsync(
-    query({
-      prompt,
-      options: {
-        cwd: workingDirectory,
-        allowedTools: ["Read", "Write", "Edit", "Bash", "Glob", "Grep", "Task"],
-        permissionMode: "bypassPermissions",
-        allowDangerouslySkipPermissions: true,
-        plugins: [{ type: "local", path: PROJECT_ROOT }],
-      },
-    }),
-  );
-
-  // Write messages to file for debugging
-  const messagesFile = join(workingDirectory, "run-scenario-messages.json");
-  await writeFile(messagesFile, JSON.stringify(messages, null, 2));
+  const messages = await runClaudeCode({
+    prompt,
+    workingDirectory,
+    messagesFilename: "run-scenario-messages.json",
+  });
 
   log("Agent completed task", runIdentifier);
 

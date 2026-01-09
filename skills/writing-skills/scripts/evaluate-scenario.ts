@@ -1,3 +1,4 @@
+import { runClaudeCode } from "../agent";
 import { log } from "./log";
 import { runScenario } from "./run-scenario";
 import type {
@@ -7,10 +8,8 @@ import type {
   ScenarioEvaluationWithExpectation,
   ScenarioRunResult,
 } from "./types";
-import { query } from "@anthropic-ai/claude-agent-sdk";
 import type { SDKMessage } from "@anthropic-ai/claude-agent-sdk";
 import type { BetaContentBlock } from "@anthropic-ai/sdk/resources/beta.mjs";
-import { writeFile } from "fs/promises";
 import { join } from "path";
 import { dedent } from "ts-dedent";
 
@@ -117,7 +116,7 @@ export async function evaluateScenario(
   const conversationLogFile = join(workingDirectory, "run-scenario-messages.json");
 
   // Run an LLM-as-judge evaluation of the conversation
-  const evaluationPrompt = dedent`
+  const prompt = dedent`
     You are an evaluator that determines whether an AI agent successfully completed an expected
     result.
 
@@ -153,7 +152,7 @@ export async function evaluateScenario(
     expected result.
   `;
 
-  const schema = {
+  const jsonSchema = {
     type: "object",
     properties: {
       success: { type: "boolean" },
@@ -164,22 +163,12 @@ export async function evaluateScenario(
 
   log("Evaluating result", runIdentifier);
 
-  const evaluationMessages = await Array.fromAsync(
-    query({
-      prompt: evaluationPrompt,
-      options: {
-        cwd: workingDirectory,
-        outputFormat: {
-          type: "json_schema",
-          schema,
-        },
-      },
-    }),
-  );
-
-  // Write evaluation messages to file for debugging
-  const messagesFile = join(workingDirectory, "evaluate-scenario-messages.json");
-  await writeFile(messagesFile, JSON.stringify(evaluationMessages, null, 2));
+  const evaluationMessages = await runClaudeCode({
+    prompt,
+    workingDirectory,
+    messagesFilename: "evaluate-scenario-messages.json",
+    jsonSchema,
+  });
 
   // Extract the structured output from the result message
   // The SDK validates against our schema, so we can safely cast
