@@ -4,10 +4,10 @@ export const ScenarioSchema = z
   .object({
     description: z.string().describe("Human-readable description of what this scenario tests"),
     task: z.string().describe("The task prompt to give to the agent"),
-    expectedSkills: z
-      .array(z.string())
-      .default([])
-      .describe("List of skills that should be invoked during this scenario"),
+    expectedSkill: z
+      .string()
+      .optional()
+      .describe("The expected skill that should be invoked during this scenario"),
     expectedResult: z
       .string()
       .optional()

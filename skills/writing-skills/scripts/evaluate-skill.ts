@@ -153,17 +153,15 @@ function printScenarioEvaluationResults(
   console.log(`Scenario ${scenarioIndex}: ${scenario.description}`);
   console.log();
 
-  // Display expected skills
-  if (scenario.expectedSkills.length > 0) {
-    console.log("Expected Skills:");
-    for (const expectedSkill of scenario.expectedSkills) {
-      const invokedCount = results.filter((result) =>
-        result.invokedSkills.has(expectedSkill),
-      ).length;
-      const percentage = Math.round((invokedCount / results.length) * 100);
-      const paddedSkill = expectedSkill.padEnd(40);
-      console.log(`  · ${paddedSkill} ${percentage}% (${invokedCount}/${results.length})`);
-    }
+  // Display expected skill
+  if (scenario.expectedSkill) {
+    const invokedCount = results.filter((result) =>
+      result.invokedSkills.has(scenario.expectedSkill!),
+    ).length;
+    const percentage = Math.round((invokedCount / results.length) * 100);
+    const paddedSkill = scenario.expectedSkill.padEnd(40);
+    console.log(`Expected Skill:`);
+    console.log(`  · ${paddedSkill} ${percentage}% (${invokedCount}/${results.length})`);
     console.log();
   }
 

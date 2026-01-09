@@ -1,12 +1,10 @@
 - description: "Forced writing-skills"
   task: "Run the writing-skills skill"
-  expectedSkills:
-    - writing-skills
+  expectedSkill: writing-skills
 
 - description: "Creating a new skill"
   task: "Create a new skill called 'example-skill'. Don't run any tests."
-  expectedSkills:
-    - writing-skills
+  expectedSkill: writing-skills
   expectedResult: "A SKILL.md file was created and contains the proper frontmatter with name and description"
 
 - description: "Running test scenarios (should NOT invoke writing-skills)"
