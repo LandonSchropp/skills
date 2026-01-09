@@ -127,17 +127,32 @@ export async function evaluateScenario(
 
     Expectation: ${expectedResult}
 
-    Conversation:
+    Working directory: ${workingDirectory}
+    Conversation log: ${conversationLogFile}
 
-    ${JSON.stringify(messages, null, 2)}
+    To evaluate the agent's work, you can use these commands for quick inspection:
 
-    Evaluate whether the agent met the expectation based on the conversation. Return:
+    \`\`\`bash
+    # List files created by the agent
+    find ${workingDirectory} -type f -not -path "*/.*" -not -name "*-messages.json"
+
+    # Extract tools used by the agent
+    cat ${conversationLogFile} | jq '[.[] | select(.type == "assistant") | .message.content[] | select(.type == "tool_use") | .name] | unique'
+
+    # Extract agent's text messages
+    cat ${conversationLogFile} | jq '[.[] | select(.type == "assistant") | .message.content[] | select(.type == "text") | .text]'
+    \`\`\`
+
+    You can also read the conversation log file directly if needed, but the commands above are
+    faster for most checks.
+
+    Evaluate whether the agent met the expectation. Return:
 
     - success: true if the expectation was clearly met, false otherwise
     - explanation: Brief (1-2 sentences) explanation of your evaluation
 
-    Be strict—only mark success as true if there is clear evidence in the conversation that the
-    agent completed the expected result.
+    Be strict—only mark success as true if there is clear evidence that the agent completed the
+    expected result.
   `;
 
   const schema = {
