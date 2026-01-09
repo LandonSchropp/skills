@@ -107,12 +107,12 @@ async function loadScenarios({
   }
 
   if (scenarioIndices === undefined || scenarioIndices.length === 0) {
-    scenarioIndices = result.data.map((scenario, index) => index);
+    scenarioIndices = result.data.map((_, index) => index);
   }
 
   return result.data
     .map((scenario, index) => [scenario, index] as [Scenario, number])
-    .filter(([scenario, index]) => scenarioIndices.includes(index));
+    .filter(([_, index]) => scenarioIndices.includes(index));
 }
 
 /**
