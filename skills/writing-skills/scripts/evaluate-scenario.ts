@@ -95,22 +95,20 @@ export async function evaluateScenario(
 ): Promise<ScenarioEvaluation> {
   const { task, expectedResult } = scenario;
 
-  log("Running scenario", "blue", runIdentifier);
-
   // Run the scenario
   const { messages, workingDirectory }: ScenarioRunResult = await runScenario(
     scenario,
     runIdentifier,
   );
 
-  log("Extracting skills from scenario", "blue", runIdentifier);
+  log("Checking skills", runIdentifier);
 
   // Extract invoked skills
   const invokedSkills = extractInvokedSkills(messages);
 
   // If there's no expected result, return simple result
   if (!expectedResult) {
-    log("Completed scenario evaluation without expected result", "blue", runIdentifier);
+    log("Complete", runIdentifier);
 
     return { invokedSkills };
   }
@@ -164,7 +162,7 @@ export async function evaluateScenario(
     required: ["success", "explanation"],
   };
 
-  log("Evaluating scenario with LLM-as-judge", "blue", runIdentifier);
+  log("Evaluating result", runIdentifier);
 
   const evaluationMessages = await Array.fromAsync(
     query({
@@ -190,7 +188,7 @@ export async function evaluateScenario(
     "success" | "explanation"
   >;
 
-  log("Completed scenario evaluation", "blue", runIdentifier);
+  log("Complete", runIdentifier);
 
   return {
     invokedSkills: invokedSkills,

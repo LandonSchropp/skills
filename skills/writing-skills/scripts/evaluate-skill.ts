@@ -128,7 +128,9 @@ async function evaluateScenarioN(
   scenarioIndex: number,
   iterations: number,
 ): Promise<ScenarioEvaluationResult[]> {
-  log(`Running ${iterations} iterations`, "magenta", { scenarioIndex });
+  log(`Start (${iterations} iteration${iterations === 1 ? "" : "s"})`, {
+    scenarioIndex,
+  });
 
   return Promise.all(
     Array.from({ length: iterations })

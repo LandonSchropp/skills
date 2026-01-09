@@ -42,7 +42,7 @@ export async function runScenario(
   const { task } = scenario;
   const { scenarioIndex, iteration } = runIdentifier;
 
-  log("Starting scenario run", "cyan", runIdentifier);
+  log("Agent running task", runIdentifier);
 
   const workingDirectory = await createTemporaryScenarioDirectory(scenarioIndex, iteration);
 
@@ -76,7 +76,7 @@ export async function runScenario(
   const messagesFile = join(workingDirectory, "run-scenario-messages.json");
   await writeFile(messagesFile, JSON.stringify(messages, null, 2));
 
-  log("Completed scenario run", "cyan", runIdentifier);
+  log("Agent completed task", runIdentifier);
 
   return { messages, workingDirectory };
 }
